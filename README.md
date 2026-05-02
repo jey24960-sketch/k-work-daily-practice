@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# K-Work Tayari
 
-## Getting Started
+K-Work Tayari is an independent EPS-TOPIK practice service for Nepali learners preparing to work in Korea.
 
-First, run the development server:
+Version 0.1 is a free mobile-first EPS-TOPIK level test MVP with local question data, localStorage state, scoring, section feedback, and answer review.
+
+K-Work Tayari is not affiliated with HRD Korea, EPS Korea, or any government agency. The questions are original practice questions and are not official exam questions.
+
+## Tech Stack
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Local TypeScript question data
+- Browser localStorage
+
+## Run Locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+## MVP Scope
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Version 0.1 intentionally does not include login, payments, a database, an admin dashboard, certificates, AI features, or official EPS/HRD Korea branding.

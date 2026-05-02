@@ -2,7 +2,12 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { USER_INFO_KEY, type TargetIndustry, type TestUser } from "@/lib/exam";
+import {
+  USER_INFO_KEY,
+  trackExamEvent,
+  type TargetIndustry,
+  type TestUser,
+} from "@/lib/exam";
 
 const industries: TargetIndustry[] = ["Manufacturing", "Agriculture", "Other"];
 
@@ -24,6 +29,7 @@ export default function TestIntroPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(form));
+    trackExamEvent("test_started", { industry: form.industry });
     router.push("/exam");
   }
 
@@ -31,9 +37,13 @@ export default function TestIntroPage() {
     <main className="min-h-dvh bg-slate-50 px-4 py-6 text-slate-950">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          EPS Practice Nepal
+          K-Work Tayari
         </p>
         <h1 className="mt-3 text-3xl font-bold">Free Level Test 01</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          EPS-TOPIK Free Level Test for Nepali learners preparing to work in
+          Korea.
+        </p>
 
         <section className="mt-6 grid gap-3 sm:grid-cols-3">
           {["20 questions", "20 minutes", "Multiple choice"].map((item) => (

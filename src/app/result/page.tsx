@@ -10,8 +10,10 @@ import {
   EXAM_ANSWERS_KEY,
   RESULT_KEY,
   getSectionScores,
+  getWeakAreaFeedback,
   getWeakestSection,
   sectionLabels,
+  trackExamEvent,
   type StoredResult,
 } from "@/lib/exam";
 
@@ -24,6 +26,7 @@ export default function ResultPage() {
       queueMicrotask(() =>
         setResult(JSON.parse(storedResult) as StoredResult),
       );
+      trackExamEvent("result_viewed");
     }
   }, []);
 
@@ -35,6 +38,7 @@ export default function ResultPage() {
   const weakest = sectionScores ? getWeakestSection(sectionScores) : null;
 
   function handleRetake() {
+    trackExamEvent("retake_clicked");
     window.localStorage.removeItem(RESULT_KEY);
     window.localStorage.removeItem(EXAM_ANSWERS_KEY);
   }
@@ -51,7 +55,7 @@ export default function ResultPage() {
             href="/test"
             className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
           >
-            Start Free Test
+            Start Free Level Test
           </Link>
         </section>
       </main>
@@ -70,7 +74,7 @@ export default function ResultPage() {
           <h1 className="mt-2 text-3xl font-bold">Your Result</h1>
           {result.user ? (
             <p className="mt-2 text-sm text-slate-600">
-              {result.user.name} · {result.user.industry}
+              {result.user.name} - {result.user.industry}
             </p>
           ) : null}
         </header>
@@ -89,6 +93,9 @@ export default function ResultPage() {
             </span>{" "}
             ({weakScore.correct}/{weakScore.total}). Review these questions first
             and practice similar patterns before taking another mock test.
+          </p>
+          <p className="mt-3 text-sm leading-6 text-slate-700">
+            {getWeakAreaFeedback(weakSection)}
           </p>
         </section>
 

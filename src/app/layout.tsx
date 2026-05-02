@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EPS Practice Nepal",
-  description: "Free EPS-TOPIK mock level test for Nepali learners.",
+  title: "K-Work Tayari",
+  description:
+    "Free EPS-TOPIK level test for Nepali learners preparing to work in Korea.",
 };
 
 export default function RootLayout({

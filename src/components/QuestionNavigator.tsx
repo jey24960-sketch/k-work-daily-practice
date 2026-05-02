@@ -18,7 +18,7 @@ export function QuestionNavigator({
 }: QuestionNavigatorProps) {
   return (
     <nav
-      className="grid grid-cols-10 gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-sm sm:grid-cols-[repeat(20,minmax(0,1fr))]"
+      className="grid grid-cols-10 gap-1.5 rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm sm:grid-cols-[repeat(20,minmax(0,1fr))] sm:gap-2 sm:p-3"
       aria-label="Question navigation"
     >
       {questions.map((question, index) => {
@@ -30,7 +30,7 @@ export function QuestionNavigator({
             key={question.id}
             type="button"
             onClick={() => onSelect(index)}
-            className={`aspect-square rounded-md border text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+            className={`flex h-8 min-w-0 items-center justify-center rounded-md border text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-slate-400 sm:aspect-square sm:h-auto sm:text-sm ${
               isCurrent
                 ? "border-slate-950 bg-slate-950 text-white"
                 : isAnswered

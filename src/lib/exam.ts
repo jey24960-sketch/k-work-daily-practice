@@ -18,9 +18,24 @@ export type StoredResult = {
   total: number;
 };
 
-export const USER_INFO_KEY = "eps-practice-nepal:user";
-export const EXAM_ANSWERS_KEY = "eps-practice-nepal:answers";
-export const RESULT_KEY = "eps-practice-nepal:result";
+export const USER_INFO_KEY = "k-work-tayari:user";
+export const EXAM_ANSWERS_KEY = "k-work-tayari:answers";
+export const RESULT_KEY = "k-work-tayari:result";
+
+export type ExamEventName =
+  | "test_started"
+  | "question_answered"
+  | "test_submitted"
+  | "result_viewed"
+  | "retake_clicked";
+
+export function trackExamEvent(
+  eventName: ExamEventName,
+  metadata: Record<string, string | number | boolean> = {},
+) {
+  void eventName;
+  void metadata;
+}
 
 export const sectionLabels: Record<Question["section"], string> = {
   vocabulary: "Vocabulary",
@@ -85,4 +100,19 @@ export function getWeakestSection(
     const bRate = b.total === 0 ? 0 : b.correct / b.total;
     return aRate - bRate;
   })[0] as [Question["section"], { correct: number; total: number }];
+}
+
+export function getWeakAreaFeedback(section: Question["section"]) {
+  const feedback: Record<Question["section"], string> = {
+    vocabulary:
+      "Review daily words, workplace nouns, and common verbs. Small vocabulary gains can improve every section.",
+    grammar:
+      "Practice particles, sentence endings, and basic connectors. Focus on why each grammar form fits the sentence.",
+    reading:
+      "Read short notices slowly and underline time, place, reason, and rule words before choosing an answer.",
+    workplace:
+      "Practice safety instructions, supervisor requests, and machine or storage vocabulary used at work.",
+  };
+
+  return feedback[section];
 }

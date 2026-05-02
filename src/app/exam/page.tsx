@@ -12,6 +12,7 @@ import {
   RESULT_KEY,
   USER_INFO_KEY,
   scoreAnswers,
+  trackExamEvent,
   type ChoiceKey,
   type TestUser,
 } from "@/lib/exam";
@@ -54,6 +55,10 @@ export default function ExamPage() {
     const storedUser = window.localStorage.getItem(USER_INFO_KEY);
     const user = storedUser ? (JSON.parse(storedUser) as TestUser) : null;
     const score = scoreAnswers(questions, answers);
+    trackExamEvent("test_submitted", {
+      score,
+      unanswered: questions.length - Object.keys(answers).length,
+    });
 
     window.localStorage.setItem(
       RESULT_KEY,
@@ -95,6 +100,12 @@ export default function ExamPage() {
       />
 
       <div className="mx-auto max-w-4xl px-4 py-5">
+        <div className="mb-3 flex items-center justify-between text-xs font-medium text-slate-500">
+          <span>EPS-TOPIK Free Level Test</span>
+          <span>
+            {questions.length - unansweredCount}/{questions.length} answered
+          </span>
+        </div>
         <QuestionNavigator
           questions={questions}
           answers={answers}
@@ -107,12 +118,16 @@ export default function ExamPage() {
             question={currentQuestion}
             questionNumber={currentIndex + 1}
             selectedAnswer={answers[currentQuestion.id]}
-            onAnswer={(answer) =>
+            onAnswer={(answer) => {
+              trackExamEvent("question_answered", {
+                questionId: currentQuestion.id,
+                questionNumber: currentIndex + 1,
+              });
               setAnswers((current) => ({
                 ...current,
                 [currentQuestion.id]: answer,
-              }))
-            }
+              }));
+            }}
           />
         </div>
 

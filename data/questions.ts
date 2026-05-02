@@ -11,9 +11,11 @@ export type Question = {
   };
   correctAnswer: "A" | "B" | "C" | "D";
   explanationEn: string;
-  explanationNe?: string;
+  explanationNe: string;
   tags: string[];
 };
+
+const nepaliPlaceholder = "Nepali explanation will be added after native review.";
 
 export const questions: Question[] = [
   {
@@ -24,7 +26,7 @@ export const questions: Question[] = [
     choices: { A: "밥", B: "물", C: "집", D: "책" },
     correctAnswer: "B",
     explanationEn: "'물' means water in Korean.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["noun", "daily-life"],
   },
   {
@@ -35,7 +37,7 @@ export const questions: Question[] = [
     choices: { A: "일합니다", B: "잡니다", C: "삽니다", D: "먹습니다" },
     correctAnswer: "A",
     explanationEn: "'일합니다' means 'work' and fits the factory sentence.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["verb", "work"],
   },
   {
@@ -46,7 +48,7 @@ export const questions: Question[] = [
     choices: { A: "머리 보호", B: "점심 식사", C: "출근 시간", D: "한국어 책" },
     correctAnswer: "A",
     explanationEn: "'안전모' is a safety helmet used to protect the head.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["safety", "workplace"],
   },
   {
@@ -57,7 +59,7 @@ export const questions: Question[] = [
     choices: { A: "작다", B: "느리다", C: "멀다", D: "춥다" },
     correctAnswer: "B",
     explanationEn: "The opposite of '빠르다' (fast) is '느리다' (slow).",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["adjective", "opposites"],
   },
   {
@@ -68,7 +70,7 @@ export const questions: Question[] = [
     choices: { A: "고치다", B: "버리다", C: "기다리다", D: "빌리다" },
     correctAnswer: "A",
     explanationEn: "'고치다' means to fix or repair something.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["verb", "maintenance"],
   },
   {
@@ -79,7 +81,7 @@ export const questions: Question[] = [
     choices: { A: "이", B: "을", C: "에서", D: "도" },
     correctAnswer: "C",
     explanationEn: "'에서' is used with a place of origin in this sentence.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["particle", "origin"],
   },
   {
@@ -95,7 +97,7 @@ export const questions: Question[] = [
     },
     correctAnswer: "A",
     explanationEn: "'한국어를 공부합니다' correctly marks Korean as the object of study.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["particle", "object"],
   },
   {
@@ -106,7 +108,7 @@ export const questions: Question[] = [
     choices: { A: "있겠습니다", B: "있었습니다", C: "있고", D: "있는" },
     correctAnswer: "A",
     explanationEn: "The sentence talks about tomorrow, so the future form '있겠습니다' fits.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["future", "condition"],
   },
   {
@@ -122,7 +124,7 @@ export const questions: Question[] = [
     },
     correctAnswer: "A",
     explanationEn: "'-아서/어서' shows reason, so '일이 많아서' means 'because there is much work.'",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["connector", "reason"],
   },
   {
@@ -133,7 +135,7 @@ export const questions: Question[] = [
     choices: { A: "확인해야", B: "확인해서", C: "확인하면", D: "확인한" },
     correctAnswer: "A",
     explanationEn: "'-아/어야 합니다' means 'must,' so workers must check the machine before work.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["obligation", "workplace"],
   },
   {
@@ -144,23 +146,23 @@ export const questions: Question[] = [
     choices: { A: "8시", B: "10시", C: "12시", D: "6시" },
     correctAnswer: "C",
     explanationEn: "The text says he eats lunch at 12 o'clock.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["time", "reading"],
   },
   {
     id: 12,
     section: "reading",
     difficulty: "easy",
-    questionText: "오늘은 일요일입니다. 수지는 회사에 가지 않습니다. 무엇이 맞습니까?",
+    questionText: "오늘은 일요일입니다. 수지 씨는 회사에 가지 않습니다. 무엇이 맞습니까?",
     choices: {
-      A: "수지는 오늘 일합니다.",
-      B: "수지는 오늘 쉽니다.",
-      C: "수지는 오늘 학교에 갑니다.",
-      D: "수지는 오늘 병원에 갑니다.",
+      A: "수지 씨는 오늘 일합니다.",
+      B: "수지 씨는 오늘 쉽니다.",
+      C: "수지 씨는 오늘 학교에 갑니다.",
+      D: "수지 씨는 오늘 병원에 갑니다.",
     },
     correctAnswer: "B",
     explanationEn: "She does not go to work on Sunday, so she rests today.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["day", "reading"],
   },
   {
@@ -171,7 +173,7 @@ export const questions: Question[] = [
     choices: { A: "쉬기", B: "음식 먹기", C: "담배 피우기", D: "물 마시기" },
     correctAnswer: "C",
     explanationEn: "The notice says smoking is not allowed in the break room.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["notice", "rules"],
   },
   {
@@ -187,7 +189,7 @@ export const questions: Question[] = [
     },
     correctAnswer: "B",
     explanationEn: "He went to the hospital because he had a cold.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["health", "reason"],
   },
   {
@@ -198,7 +200,7 @@ export const questions: Question[] = [
     choices: { A: "8시", B: "8시 30분", C: "9시", D: "9시 30분" },
     correctAnswer: "B",
     explanationEn: "The new start time is 8:30 a.m., so workers should arrive by then.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["notice", "work-schedule"],
   },
   {
@@ -209,7 +211,7 @@ export const questions: Question[] = [
     choices: { A: "식당", B: "회의실", C: "기숙사", D: "은행" },
     correctAnswer: "B",
     explanationEn: "'회의실' means meeting room.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["instruction", "place"],
   },
   {
@@ -225,7 +227,7 @@ export const questions: Question[] = [
     },
     correctAnswer: "B",
     explanationEn: "In a workplace injury, you should first tell a supervisor or manager.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["safety", "injury"],
   },
   {
@@ -241,7 +243,7 @@ export const questions: Question[] = [
     },
     correctAnswer: "A",
     explanationEn: "If a machine sounds unusual, stop it safely and report the issue.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["machine", "safety"],
   },
   {
@@ -257,7 +259,7 @@ export const questions: Question[] = [
     },
     correctAnswer: "B",
     explanationEn: "'창고에 놓아 주세요' means 'please put it in the storage room.'",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["instruction", "storage"],
   },
   {
@@ -273,7 +275,7 @@ export const questions: Question[] = [
     },
     correctAnswer: "B",
     explanationEn: "'착용해야 합니다' means 'must wear,' so gloves are required before work.",
-    explanationNe: "Nepali explanation will be added.",
+    explanationNe: nepaliPlaceholder,
     tags: ["ppe", "obligation"],
   },
 ];
