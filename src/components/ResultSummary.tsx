@@ -14,8 +14,8 @@ export function ResultSummary({ score, total }: ResultSummaryProps) {
         Total Score
       </p>
       <div className="mt-2 flex flex-wrap items-end gap-3">
-        <h1 className="text-4xl font-bold text-slate-950">
-          {score} / {total}
+        <h1 className="text-3xl font-bold text-slate-950 sm:text-4xl">
+          Your score: {score} / {total}
         </h1>
         <p className="pb-1 text-lg font-semibold text-slate-600">{percent}%</p>
       </div>

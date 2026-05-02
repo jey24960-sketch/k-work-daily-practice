@@ -2,16 +2,27 @@ import type { Question } from "../../data/questions";
 
 export type ChoiceKey = keyof Question["choices"];
 
-export type TargetIndustry = "Manufacturing" | "Agriculture" | "Other";
+export type TargetIndustry =
+  | "Manufacturing"
+  | "Agriculture/Livestock"
+  | "Construction"
+  | "Service"
+  | "Fishery"
+  | "Other";
 
-export type TestUser = {
+export type OptInLead = {
   name: string;
   contact: string;
   industry: TargetIndustry;
 };
 
+export type UtmParams = {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+};
+
 export type StoredResult = {
-  user: TestUser | null;
   answers: Record<number, ChoiceKey>;
   submittedAt: string;
   score: number;
@@ -21,6 +32,8 @@ export type StoredResult = {
 export const USER_INFO_KEY = "k-work-tayari:user";
 export const EXAM_ANSWERS_KEY = "k-work-tayari:answers";
 export const RESULT_KEY = "k-work-tayari:result";
+export const TEST_ATTEMPT_ID_KEY = "k-work-tayari:test-attempt-id";
+export const UTM_KEY = "k-work-tayari:utm";
 
 export type ExamEventName =
   | "test_started"
@@ -102,6 +115,29 @@ export function getWeakestSection(
   })[0] as [Question["section"], { correct: number; total: number }];
 }
 
+export function getWeakestSections(
+  sectionScores: Record<Question["section"], { correct: number; total: number }>,
+  limit = 2,
+) {
+  const sectionOrder: Question["section"][] = [
+    "vocabulary",
+    "grammar",
+    "reading",
+    "workplace",
+  ];
+
+  return sectionOrder
+    .map((section) => ({ section, ...sectionScores[section] }))
+    .sort((a, b) => {
+      const aRate = a.total === 0 ? 0 : a.correct / a.total;
+      const bRate = b.total === 0 ? 0 : b.correct / b.total;
+
+      if (aRate !== bRate) return aRate - bRate;
+      return sectionOrder.indexOf(a.section) - sectionOrder.indexOf(b.section);
+    })
+    .slice(0, limit);
+}
+
 export function getWeakAreaFeedback(section: Question["section"]) {
   const feedback: Record<Question["section"], string> = {
     vocabulary:
@@ -115,4 +151,21 @@ export function getWeakAreaFeedback(section: Question["section"]) {
   };
 
   return feedback[section];
+}
+
+export function getUtmParams(searchParams: URLSearchParams): UtmParams {
+  const utm: UtmParams = {};
+  const source = searchParams.get("utm_source");
+  const medium = searchParams.get("utm_medium");
+  const campaign = searchParams.get("utm_campaign");
+
+  if (source) utm.utm_source = source;
+  if (medium) utm.utm_medium = medium;
+  if (campaign) utm.utm_campaign = campaign;
+
+  return utm;
+}
+
+export function hasUtmParams(utm: UtmParams) {
+  return Boolean(utm.utm_source || utm.utm_medium || utm.utm_campaign);
 }

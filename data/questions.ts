@@ -15,7 +15,7 @@ export type Question = {
   tags: string[];
 };
 
-const nepaliPlaceholder = "Nepali explanation will be added after native review.";
+const nepaliPlaceholder = "Nepali explanation coming soon.";
 
 export const questions: Question[] = [
   {

@@ -1,5 +1,5 @@
 import type { Question } from "../../data/questions";
-import type { ChoiceKey } from "@/lib/exam";
+import { sectionLabels, type ChoiceKey } from "@/lib/exam";
 
 type AnswerReviewProps = {
   questions: Question[];
@@ -20,9 +20,14 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
-              <h3 className="font-semibold leading-7 text-slate-950">
-                {index + 1}. {question.questionText}
-              </h3>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Question {index + 1} - {sectionLabels[question.section]}
+                </p>
+                <h3 className="mt-1 font-semibold leading-7 text-slate-950">
+                  {question.questionText}
+                </h3>
+              </div>
               <span
                 className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold ${
                   isCorrect
@@ -57,7 +62,7 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
                 <dt className="font-semibold text-slate-950">
                   Nepali explanation
                 </dt>
-                <dd>{question.explanationNe}</dd>
+                <dd>{question.explanationNe || "Nepali explanation coming soon."}</dd>
               </div>
             </dl>
           </article>

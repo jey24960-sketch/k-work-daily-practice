@@ -36,7 +36,8 @@ export default function Home() {
         <footer className="border-t border-slate-200 py-5">
           <p className="max-w-2xl text-sm leading-6 text-slate-500">
             K-Work Tayari is an independent practice service. It is not
-            affiliated with HRD Korea, EPS Korea, or any government agency.
+            affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government
+            agency.
           </p>
         </footer>
       </div>

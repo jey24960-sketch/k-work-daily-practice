@@ -1,35 +1,30 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  EXAM_ANSWERS_KEY,
+  RESULT_KEY,
+  TEST_ATTEMPT_ID_KEY,
+  UTM_KEY,
   USER_INFO_KEY,
+  getUtmParams,
+  hasUtmParams,
   trackExamEvent,
-  type TargetIndustry,
-  type TestUser,
 } from "@/lib/exam";
-
-const industries: TargetIndustry[] = ["Manufacturing", "Agriculture", "Other"];
 
 export default function TestIntroPage() {
   const router = useRouter();
-  const [form, setForm] = useState<TestUser>({
-    name: "",
-    contact: "",
-    industry: "Manufacturing",
-  });
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(USER_INFO_KEY);
-    if (stored) {
-      queueMicrotask(() => setForm(JSON.parse(stored) as TestUser));
+  function handleStartTest() {
+    const utm = getUtmParams(new URLSearchParams(window.location.search));
+    if (hasUtmParams(utm)) {
+      window.localStorage.setItem(UTM_KEY, JSON.stringify(utm));
     }
-  }, []);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(form));
-    trackExamEvent("test_started", { industry: form.industry });
+    window.localStorage.removeItem(USER_INFO_KEY);
+    window.localStorage.removeItem(EXAM_ANSWERS_KEY);
+    window.localStorage.removeItem(RESULT_KEY);
+    window.localStorage.removeItem(TEST_ATTEMPT_ID_KEY);
+    trackExamEvent("test_started");
     router.push("/exam");
   }
 
@@ -72,83 +67,28 @@ export default function TestIntroPage() {
           </div>
         </section>
 
-        <form
-          onSubmit={handleSubmit}
-          className="mt-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
-        >
-          <h2 className="text-lg font-semibold">Before you start</h2>
-
-          <label className="mt-5 block">
-            <span className="text-sm font-semibold text-slate-700">Name</span>
-            <input
-              value={form.name}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  name: event.target.value,
-                }))
-              }
-              required
-              className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="Your name"
-            />
-          </label>
-
-          <label className="mt-4 block">
-            <span className="text-sm font-semibold text-slate-700">
-              Phone or email
-            </span>
-            <input
-              value={form.contact}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  contact: event.target.value,
-                }))
-              }
-              required
-              className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="Phone number or email"
-            />
-          </label>
-
-          <fieldset className="mt-4">
-            <legend className="text-sm font-semibold text-slate-700">
-              Target industry
-            </legend>
-            <div className="mt-2 grid gap-2 sm:grid-cols-3">
-              {industries.map((industry) => (
-                <label
-                  key={industry}
-                  className={`flex cursor-pointer items-center justify-center rounded-md border px-3 py-3 text-sm font-semibold transition ${
-                    form.industry === industry
-                      ? "border-slate-950 bg-slate-950 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="industry"
-                    value={industry}
-                    checked={form.industry === industry}
-                    onChange={() =>
-                      setForm((current) => ({ ...current, industry }))
-                    }
-                    className="sr-only"
-                  />
-                  {industry}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
+        <section className="mt-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold">Ready to begin?</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            No signup or personal information is required. Start the test and
+            get your score immediately after submitting.
+          </p>
           <button
-            type="submit"
-            className="mt-6 w-full rounded-md bg-slate-950 px-5 py-3 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            type="button"
+            onClick={handleStartTest}
+            className="mt-6 w-full rounded-md bg-slate-950 px-5 py-3.5 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
           >
-            Start Test
+            Start Free Test
           </button>
-        </form>
+        </section>
+
+        <footer className="mt-6 border-t border-slate-200 pt-5">
+          <p className="text-sm leading-6 text-slate-500">
+            K-Work Tayari is an independent practice service. It is not
+            affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government
+            agency.
+          </p>
+        </footer>
       </div>
     </main>
   );

@@ -10,11 +10,9 @@ import { QuestionNavigator } from "@/components/QuestionNavigator";
 import {
   EXAM_ANSWERS_KEY,
   RESULT_KEY,
-  USER_INFO_KEY,
   scoreAnswers,
   trackExamEvent,
   type ChoiceKey,
-  type TestUser,
 } from "@/lib/exam";
 
 const TEST_DURATION_SECONDS = 20 * 60;
@@ -52,8 +50,6 @@ export default function ExamPage() {
     if (submittedRef.current) return;
     submittedRef.current = true;
 
-    const storedUser = window.localStorage.getItem(USER_INFO_KEY);
-    const user = storedUser ? (JSON.parse(storedUser) as TestUser) : null;
     const score = scoreAnswers(questions, answers);
     trackExamEvent("test_submitted", {
       score,
@@ -63,7 +59,6 @@ export default function ExamPage() {
     window.localStorage.setItem(
       RESULT_KEY,
       JSON.stringify({
-        user,
         answers,
         submittedAt: new Date().toISOString(),
         score,
