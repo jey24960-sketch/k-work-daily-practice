@@ -27,12 +27,12 @@ export function QuestionCard({
         <span className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600">
           {difficultyLabels[question.difficulty]}
         </span>
-        <span className="ml-auto text-xs font-medium text-slate-500">
+        <span className="ml-auto text-xs font-semibold text-slate-600">
           Question {questionNumber}
         </span>
       </div>
 
-      <h2 className="text-lg font-semibold leading-8 text-slate-950 sm:text-xl">
+      <h2 className="text-xl font-semibold leading-8 text-slate-950 sm:text-2xl">
         {question.questionText}
       </h2>
 
@@ -52,7 +52,8 @@ export function QuestionCard({
                 key={key}
                 type="button"
                 onClick={() => onAnswer(key)}
-                className={`flex min-h-14 w-full items-start gap-3 rounded-lg border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+                aria-pressed={isSelected}
+                className={`flex min-h-16 w-full items-start gap-3 rounded-lg border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-slate-400 ${
                   isSelected
                     ? "border-slate-950 bg-slate-950 text-white"
                     : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
@@ -67,7 +68,14 @@ export function QuestionCard({
                 >
                   {key}
                 </span>
-                <span className="pt-0.5 text-base leading-6">{choice}</span>
+                <span className="pt-0.5 text-base leading-6">
+                  <span>{choice}</span>
+                  {isSelected ? (
+                    <span className="mt-1 block text-xs font-semibold uppercase tracking-wide text-white/80">
+                      Selected
+                    </span>
+                  ) : null}
+                </span>
               </button>
             );
           },

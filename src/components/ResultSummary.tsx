@@ -13,15 +13,21 @@ export function ResultSummary({ score, total }: ResultSummaryProps) {
       <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
         Total Score
       </p>
-      <div className="mt-2 flex flex-wrap items-end gap-3">
-        <h1 className="text-3xl font-bold text-slate-950 sm:text-4xl">
-          Your score: {score} / {total}
+      <div className="mt-2 flex items-end gap-3">
+        <h1 className="text-5xl font-bold leading-none text-slate-950">
+          {score}
         </h1>
-        <p className="pb-1 text-lg font-semibold text-slate-600">{percent}%</p>
+        <div className="pb-1">
+          <p className="text-lg font-bold text-slate-950">/ {total}</p>
+          <p className="text-sm font-semibold text-slate-600">{percent}%</p>
+        </div>
       </div>
-      <p className="mt-4 inline-flex rounded-md bg-slate-950 px-3 py-1.5 text-sm font-semibold text-white">
-        {getLevel(score)}
-      </p>
+      <div className="mt-4 rounded-md bg-slate-950 px-3 py-2 text-white">
+        <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
+          Level judgment
+        </p>
+        <p className="text-base font-semibold">{getLevel(score)}</p>
+      </div>
     </section>
   );
 }

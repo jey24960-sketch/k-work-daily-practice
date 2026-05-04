@@ -23,6 +23,7 @@ export type UtmParams = {
 };
 
 export type StoredResult = {
+  attemptId?: string;
   answers: Record<number, ChoiceKey>;
   submittedAt: string;
   score: number;
@@ -33,6 +34,8 @@ export const USER_INFO_KEY = "k-work-tayari:user";
 export const EXAM_ANSWERS_KEY = "k-work-tayari:answers";
 export const RESULT_KEY = "k-work-tayari:result";
 export const TEST_ATTEMPT_ID_KEY = "k-work-tayari:test-attempt-id";
+export const TEST_ATTEMPT_PENDING_ID_KEY =
+  "k-work-tayari:test-attempt-pending-id";
 export const UTM_KEY = "k-work-tayari:utm";
 
 export type ExamEventName =
@@ -168,4 +171,23 @@ export function getUtmParams(searchParams: URLSearchParams): UtmParams {
 
 export function hasUtmParams(utm: UtmParams) {
   return Boolean(utm.utm_source || utm.utm_medium || utm.utm_campaign);
+}
+
+export function readClientUtmParams(): UtmParams {
+  if (typeof window === "undefined") return {};
+
+  const currentUtm = getUtmParams(new URLSearchParams(window.location.search));
+  if (hasUtmParams(currentUtm)) {
+    window.localStorage.setItem(UTM_KEY, JSON.stringify(currentUtm));
+    return currentUtm;
+  }
+
+  const storedUtm = window.localStorage.getItem(UTM_KEY);
+  if (!storedUtm) return {};
+
+  try {
+    return JSON.parse(storedUtm) as UtmParams;
+  } catch {
+    return {};
+  }
 }

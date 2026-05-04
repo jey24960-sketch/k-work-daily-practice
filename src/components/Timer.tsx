@@ -13,14 +13,19 @@ export function Timer({ seconds }: TimerProps) {
 
   return (
     <div
-      className={`rounded-md border px-3 py-1.5 font-mono text-sm font-semibold ${
+      className={`rounded-md border px-2.5 py-1.5 text-right ${
         urgent
           ? "border-red-200 bg-red-50 text-red-700"
           : "border-slate-200 bg-slate-50 text-slate-800"
       }`}
       aria-live="polite"
     >
-      {minutes}:{remainingSeconds}
+      <span className="block text-[10px] font-semibold uppercase tracking-wide">
+        Time left
+      </span>
+      <span className="block font-mono text-sm font-semibold">
+        {minutes}:{remainingSeconds}
+      </span>
     </div>
   );
 }

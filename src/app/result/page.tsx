@@ -10,18 +10,16 @@ import {
   EXAM_ANSWERS_KEY,
   RESULT_KEY,
   TEST_ATTEMPT_ID_KEY,
-  UTM_KEY,
+  TEST_ATTEMPT_PENDING_ID_KEY,
   USER_INFO_KEY,
   getSectionScores,
-  getUtmParams,
   getWeakAreaFeedback,
   getWeakestSections,
-  hasUtmParams,
+  readClientUtmParams,
   sectionLabels,
   trackExamEvent,
   type OptInLead,
   type StoredResult,
-  type UtmParams,
 } from "@/lib/exam";
 import {
   normalizeUtmParams,
@@ -30,6 +28,7 @@ import {
   saveTestAttempt,
   type SaveShareEventPayload,
 } from "@/lib/supabaseEvents";
+import { createClientUuid } from "@/lib/clientUuid";
 
 const industries: OptInLead["industry"][] = [
   "Manufacturing",
@@ -67,6 +66,7 @@ export default function ResultPage() {
     const storedAttemptId = window.localStorage.getItem(TEST_ATTEMPT_ID_KEY);
     if (storedAttemptId) {
       queueMicrotask(() => setTestAttemptId(storedAttemptId));
+      window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
     }
   }, []);
 
@@ -87,12 +87,15 @@ export default function ResultPage() {
     const storedAttemptId = window.localStorage.getItem(TEST_ATTEMPT_ID_KEY);
     if (storedAttemptId) {
       queueMicrotask(() => setTestAttemptId(storedAttemptId));
+      window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
       attemptInsertStartedRef.current = true;
       return;
     }
 
+    const attemptId = getStableAttemptId(result);
     attemptInsertStartedRef.current = true;
     saveTestAttempt({
+      id: attemptId,
       total_score: result.score,
       total_questions: result.total,
       vocabulary_score: sectionScores.vocabulary.correct,
@@ -103,10 +106,11 @@ export default function ResultPage() {
       target_industry: null,
       user_agent: navigator.userAgent || null,
       referrer: document.referrer || null,
-      ...normalizeUtmParams(readUtmParams()),
+      ...normalizeUtmParams(readClientUtmParams()),
     }).then((insertedId) => {
       if (!insertedId) return;
       window.localStorage.setItem(TEST_ATTEMPT_ID_KEY, insertedId);
+      window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
       setTestAttemptId(insertedId);
     });
   }, [result, sectionScores, weakSections]);
@@ -117,6 +121,7 @@ export default function ResultPage() {
     window.localStorage.removeItem(EXAM_ANSWERS_KEY);
     window.localStorage.removeItem(USER_INFO_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_ID_KEY);
+    window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
   }
 
   async function handleShare() {
@@ -132,14 +137,14 @@ export default function ResultPage() {
 
     try {
       if (navigator.share) {
-        await trackShareClick("web_share");
+        void trackShareClick("web_share");
         await navigator.share(shareData);
         setShareStatus("Share sheet opened.");
         return;
       }
 
       if (navigator.clipboard) {
-        await trackShareClick("copy_link");
+        void trackShareClick("copy_link");
         await navigator.clipboard.writeText(shareText);
         setShareStatus(
           "Score copied. You can paste it into WhatsApp or Messenger.",
@@ -171,7 +176,7 @@ export default function ResultPage() {
       total_score: result?.score ?? null,
       consent: true,
       source: "result_page_opt_in",
-      ...normalizeUtmParams(readUtmParams()),
+      ...normalizeUtmParams(readClientUtmParams()),
     }).then((saved) => {
       if (!saved) {
         setOptInStatus(
@@ -181,17 +186,20 @@ export default function ResultPage() {
       }
 
       setOptInStatus(
-      "Thank you. We will contact you only about K-Work Tayari practice updates.",
+        "Thank you. We will contact you only about K-Work Tayari practice updates.",
       );
     });
   }
 
   async function trackShareClick(channel: SaveShareEventPayload["channel"]) {
     await saveShareEvent({
-      attempt_id: testAttemptId,
+      attempt_id:
+        testAttemptId ??
+        result?.attemptId ??
+        window.localStorage.getItem(TEST_ATTEMPT_PENDING_ID_KEY),
       total_score: result?.score ?? null,
       channel,
-      ...normalizeUtmParams(readUtmParams()),
+      ...normalizeUtmParams(readClientUtmParams()),
     });
   }
 
@@ -217,6 +225,9 @@ export default function ResultPage() {
   const shareText = `I scored ${result.score}/20 on K-Work Tayari EPS-TOPIK Free Level Test. Try it here:`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareBaseUrl}`)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareBaseUrl)}`;
+  const weakSectionNames = weakSections.map(
+    ({ section }) => sectionLabels[section],
+  );
 
   return (
     <main className="min-h-dvh bg-slate-50 px-4 py-6 text-slate-950">
@@ -225,7 +236,9 @@ export default function ResultPage() {
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
             Free Level Test 01
           </p>
-          <h1 className="mt-2 text-3xl font-bold">Your Diagnostic Result</h1>
+          <h1 className="mt-2 text-3xl font-bold leading-tight">
+            Your Diagnostic Result
+          </h1>
         </header>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
@@ -234,15 +247,23 @@ export default function ResultPage() {
         </div>
 
         <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Weakness Analysis</h2>
+          <h2 className="text-lg font-semibold">Focus on these next</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Your weak areas:{" "}
             <span className="font-semibold text-slate-950">
-              {weakSections
-                .map(({ section }) => sectionLabels[section])
-                .join(", ")}
+              {weakSectionNames.join(", ")}
             </span>
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {weakSectionNames.map((sectionName) => (
+              <span
+                key={sectionName}
+                className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800"
+              >
+                {sectionName}
+              </span>
+            ))}
+          </div>
           <div className="mt-3 space-y-2">
             {weakSections.map(({ section, correct, total }) => (
               <p key={section} className="text-sm leading-6 text-slate-700">
@@ -256,65 +277,109 @@ export default function ResultPage() {
         </section>
 
         <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Share your score with friends</h2>
+          <h2 className="text-lg font-semibold">Recommended next actions</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Share a safe practice-test score message. This does not claim to be
-            an official score.
+            Start by reviewing {weakSectionNames[0] ?? "your weak area"}, then
+            retake or share when you are ready.
           </p>
-          <button
-            type="button"
-            onClick={handleShare}
-            className="mt-4 w-full rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
-          >
-            Share my score
-          </button>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => void trackShareClick("whatsapp")}
-              className="inline-flex items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
+              href="#answer-review"
+              className="inline-flex min-h-12 items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
-              Share on WhatsApp
+              Review My Answers
             </a>
-            <a
-              href={facebookUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => void trackShareClick("facebook")}
-              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            <Link
+              href="/daily"
+              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-500"
             >
-              Share on Facebook
-            </a>
+              Try Daily 5 Questions
+            </Link>
+            <Link
+              href="/test"
+              onClick={handleRetake}
+              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            >
+              Retake Test
+            </Link>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            >
+              Share My Score
+            </button>
           </div>
-          {shareStatus ? (
-            <p className="mt-3 text-sm text-slate-600">{shareStatus}</p>
-          ) : null}
+          <a
+            href="#free-practice-updates"
+            className="mt-3 inline-flex text-sm font-semibold text-slate-700 underline-offset-4 hover:underline"
+          >
+            Get more free EPS practice sets
+          </a>
         </section>
-
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <Link
-            href="/test"
-            onClick={handleRetake}
-            className="inline-flex flex-1 items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
-          >
-            Retake test
-          </Link>
-          <Link
-            href="/"
-            className="inline-flex flex-1 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
-          >
-            Back to Home
-          </Link>
-        </div>
 
         <div className="mt-6">
           <AnswerReview questions={questions} answers={result.answers} />
         </div>
 
         <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold">Share your score</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Share a safe practice-test score message. This is only a practice
+            result.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => void trackShareClick("whatsapp")}
+              className="inline-flex min-h-12 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            >
+              Share on WhatsApp
+            </a>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex min-h-12 items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            >
+              Share My Score
+            </button>
+            <a
+              href={facebookUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => void trackShareClick("facebook")}
+              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            >
+              Facebook
+            </a>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            Share text: {shareText} {shareBaseUrl}
+          </p>
+          {shareStatus ? (
+            <p className="mt-3 text-sm text-slate-600">{shareStatus}</p>
+          ) : null}
+        </section>
+
+        <div className="mt-5">
+          <Link
+            href="/"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+          >
+            Back to Home
+          </Link>
+        </div>
+
+        <section
+          id="free-practice-updates"
+          className="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-5"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Optional
+          </p>
+          <h2 className="mt-1 text-lg font-semibold">
             Get more free EPS practice sets
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -350,7 +415,6 @@ export default function ResultPage() {
                     contact: event.target.value,
                   }))
                 }
-                required
                 className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
                 placeholder="Email, phone, or WhatsApp"
               />
@@ -378,7 +442,7 @@ export default function ResultPage() {
             </label>
             <button
               type="submit"
-              className="w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+              className="min-h-12 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
             >
               Notify me about free practice sets
             </button>
@@ -404,25 +468,21 @@ export default function ResultPage() {
   );
 }
 
-function readUtmParams(): UtmParams {
-  const currentUtm = getUtmParams(new URLSearchParams(window.location.search));
-  if (hasUtmParams(currentUtm)) {
-    window.localStorage.setItem(UTM_KEY, JSON.stringify(currentUtm));
-    return currentUtm;
-  }
-
-  const storedUtm = window.localStorage.getItem(UTM_KEY);
-  if (!storedUtm) return {};
-
-  try {
-    return JSON.parse(storedUtm) as UtmParams;
-  } catch {
-    return {};
-  }
-}
-
 function getContactType(contact: string) {
   if (contact.includes("@")) return "email";
   if (contact.replace(/\D/g, "").length >= 7) return "phone_or_whatsapp";
   return "other";
+}
+
+function getStableAttemptId(result: StoredResult) {
+  if (result.attemptId) return result.attemptId;
+
+  const pendingAttemptId = window.localStorage.getItem(
+    TEST_ATTEMPT_PENDING_ID_KEY,
+  );
+  if (pendingAttemptId) return pendingAttemptId;
+
+  const attemptId = createClientUuid();
+  window.localStorage.setItem(TEST_ATTEMPT_PENDING_ID_KEY, attemptId);
+  return attemptId;
 }

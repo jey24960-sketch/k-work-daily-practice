@@ -8,8 +8,15 @@ type AnswerReviewProps = {
 
 export function AnswerReview({ questions, answers }: AnswerReviewProps) {
   return (
-    <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-slate-950">Answer Review</h2>
+    <section id="answer-review" className="scroll-mt-20 space-y-3">
+      <div>
+        <h2 className="text-xl font-semibold text-slate-950">
+          Review My Answers
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          Check each answer and read the explanation before you retake.
+        </p>
+      </div>
       {questions.map((question, index) => {
         const userAnswer = answers[question.id];
         const isCorrect = userAnswer === question.correctAnswer;
@@ -19,7 +26,7 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
             key={question.id}
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="grid gap-3 sm:flex sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Question {index + 1} - {sectionLabels[question.section]}
@@ -38,8 +45,8 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
                 {isCorrect ? "Correct" : "Incorrect"}
               </span>
             </div>
-            <dl className="mt-3 grid gap-2 text-sm text-slate-700">
-              <div>
+            <dl className="mt-4 grid gap-3 text-sm text-slate-700">
+              <div className="rounded-md bg-slate-50 p-3">
                 <dt className="font-semibold text-slate-950">Your answer</dt>
                 <dd>
                   {userAnswer
@@ -47,22 +54,24 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
                     : "Not answered"}
                 </dd>
               </div>
-              <div>
+              <div className="rounded-md bg-emerald-50 p-3">
                 <dt className="font-semibold text-slate-950">Correct answer</dt>
                 <dd>
                   {question.correctAnswer}.{" "}
                   {question.choices[question.correctAnswer]}
                 </dd>
               </div>
-              <div>
+              <div className="rounded-md border border-slate-200 p-3">
                 <dt className="font-semibold text-slate-950">Explanation</dt>
-                <dd>{question.explanationEn}</dd>
+                <dd className="mt-1 leading-6">{question.explanationEn}</dd>
               </div>
-              <div>
+              <div className="rounded-md border border-slate-200 p-3">
                 <dt className="font-semibold text-slate-950">
                   Nepali explanation
                 </dt>
-                <dd>{question.explanationNe || "Nepali explanation coming soon."}</dd>
+                <dd className="mt-1 leading-6">
+                  {question.explanationNe || "Nepali explanation coming soon."}
+                </dd>
               </div>
             </dl>
           </article>

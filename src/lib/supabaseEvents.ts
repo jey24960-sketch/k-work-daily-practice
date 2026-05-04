@@ -8,6 +8,7 @@ type NullableUtmParams = {
 };
 
 export type SaveTestAttemptPayload = NullableUtmParams & {
+  id: string;
   total_score: number;
   total_questions: number;
   vocabulary_score: number;
@@ -43,16 +44,16 @@ export async function saveTestAttempt(payload: SaveTestAttemptPayload) {
     return null;
   }
 
-  const id = createClientUuid();
-
   try {
     const { error } = await supabase.from("test_attempts").insert({
-      id,
       ...payload,
     });
 
-    if (error) return null;
-    return id;
+    if (error) {
+      if (error.code === "23505") return payload.id;
+      return null;
+    }
+    return payload.id;
   } catch {
     return null;
   }
@@ -98,16 +99,4 @@ export function normalizeUtmParams(utm: UtmParams): NullableUtmParams {
     utm_medium: utm.utm_medium ?? null,
     utm_campaign: utm.utm_campaign ?? null,
   };
-}
-
-function createClientUuid() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
-    const random = Math.floor(Math.random() * 16);
-    const value = char === "x" ? random : (random & 0x3) | 0x8;
-    return value.toString(16);
-  });
 }

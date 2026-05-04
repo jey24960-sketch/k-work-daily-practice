@@ -111,6 +111,9 @@ on public.test_attempts (created_at desc);
 create index if not exists idx_test_attempts_utm_source
 on public.test_attempts (utm_source);
 
+create index if not exists idx_test_attempts_utm_medium
+on public.test_attempts (utm_medium);
+
 create index if not exists idx_test_attempts_utm_campaign
 on public.test_attempts (utm_campaign);
 
@@ -120,6 +123,12 @@ on public.opt_in_leads (created_at desc);
 create index if not exists idx_opt_in_leads_utm_source
 on public.opt_in_leads (utm_source);
 
+create index if not exists idx_opt_in_leads_utm_medium
+on public.opt_in_leads (utm_medium);
+
+create index if not exists idx_opt_in_leads_utm_campaign
+on public.opt_in_leads (utm_campaign);
+
 create index if not exists idx_share_events_created_at
 on public.share_events (created_at desc);
 
@@ -128,3 +137,12 @@ on public.share_events (attempt_id);
 
 create index if not exists idx_share_events_channel
 on public.share_events (channel);
+
+create index if not exists idx_share_events_utm_source
+on public.share_events (utm_source);
+
+create index if not exists idx_share_events_utm_medium
+on public.share_events (utm_medium);
+
+create index if not exists idx_share_events_utm_campaign
+on public.share_events (utm_campaign);

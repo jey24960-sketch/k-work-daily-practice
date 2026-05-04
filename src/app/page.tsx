@@ -8,29 +8,100 @@ export default function Home() {
           <p className="text-lg font-bold">K-Work Tayari</p>
         </header>
 
-        <section className="py-12 sm:py-20">
+        <section className="py-8 sm:py-16">
           <div className="max-w-2xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-              EPS-TOPIK Free Level Test
+            <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-emerald-700">
+              Free EPS-TOPIK Level Test
             </p>
             <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
-              K-Work Tayari
+              Check your EPS-TOPIK level in 20 questions
             </h1>
             <p className="mt-4 max-w-xl text-lg leading-8 text-slate-600">
-              Free EPS-TOPIK level test for Nepali learners preparing to work
-              in Korea.
+              A mobile-friendly diagnostic for Nepali learners preparing to
+              work in Korea. Get an instant score, section weakness analysis,
+              and simple Nepali explanation support.
             </p>
-            <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
-              Practice Korean questions, check your current level, and find
-              your weak areas before the real exam.
+            <p className="mt-4 inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+              No login. No payment. Instant result.
             </p>
-            <Link
-              href="/test"
-              className="mt-8 inline-flex w-full items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
-            >
-              Start Free Level Test
-            </Link>
+            <div className="mt-5 grid grid-cols-3 divide-x divide-slate-200 rounded-lg border border-slate-200 bg-white px-2 py-4 text-center">
+              {[
+                ["20", "questions"],
+                ["20", "minutes"],
+                ["4", "sections"],
+              ].map(([value, label]) => (
+                <div key={label} className="px-2">
+                  <p className="text-2xl font-bold leading-none text-slate-950">
+                    {value}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 grid gap-2 text-sm font-medium text-slate-700 sm:grid-cols-3">
+              {[
+                "Nepali explanations",
+                "Section weakness analysis",
+                "Mobile-friendly test",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-md border border-slate-200 bg-white px-3 py-3"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/test"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+              >
+                Start Free 20-Question Test
+              </Link>
+              <Link
+                href="/daily"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-slate-200 bg-white px-5 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+              >
+                Try Today&rsquo;s 5-Minute Practice
+              </Link>
+            </div>
           </div>
+          <section className="mt-8 max-w-2xl">
+            <h2 className="text-base font-semibold text-slate-950">
+              Why learners use it
+            </h2>
+            <div className="mt-3 grid gap-3">
+              {[
+                [
+                  "Built for Nepali EPS candidates",
+                  "Practice Korean questions with English and Nepali explanation support.",
+                ],
+                [
+                  "Find weak areas fast",
+                  "See Vocabulary, Grammar, Reading, and Workplace Korean scores.",
+                ],
+                [
+                  "Independent and free",
+                  "Not a government site. No fees and no login wall.",
+                ],
+              ].map(([title, body]) => (
+                <div
+                  key={title}
+                  className="rounded-lg border border-slate-200 bg-white p-4"
+                >
+                  <h3 className="text-sm font-semibold text-slate-950">
+                    {title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
         </section>
 
         <footer className="border-t border-slate-200 py-5">

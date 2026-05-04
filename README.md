@@ -31,7 +31,7 @@ npm run build
 
 ## Supabase Environment
 
-Supabase is optional in local development. Without these variables, the test and result pages still work, but anonymous attempt storage and result-page opt-in submission are skipped.
+Supabase is optional in local development. Without these variables, the test and result pages still work, but anonymous attempt storage, result-page opt-in submission, and share tracking are skipped.
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
@@ -39,6 +39,33 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 Create the lightweight validation tables by pasting [supabase/schema.sql](supabase/schema.sql) into the Supabase SQL Editor.
+
+### Local Supabase Insert Test
+
+1. Create a Supabase project.
+2. Run [supabase/schema.sql](supabase/schema.sql) in the Supabase SQL Editor.
+3. Add `.env.local` in the project root:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
+
+4. Run `npm run dev`.
+5. Open [http://localhost:3000](http://localhost:3000).
+6. Complete one 20-question test and reach the result page.
+7. Confirm one new row exists in `public.test_attempts`.
+8. Submit the result-page opt-in form with a contact value.
+9. Confirm one new row exists in `public.opt_in_leads`.
+10. Click a share button.
+11. Confirm one new row exists in `public.share_events`.
+
+### Vercel Supabase Insert Test
+
+1. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel Project Settings.
+2. Redeploy the project so the public Supabase values are included in the client bundle.
+3. Complete the same test flow on the live URL.
+4. Confirm rows in Supabase Table Editor for `test_attempts`, `opt_in_leads`, and `share_events`.
 
 ## MVP Scope
 

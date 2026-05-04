@@ -24,9 +24,9 @@ export function ExamHeader({ secondsLeft, onSubmit }: ExamHeaderProps) {
           <button
             type="button"
             onClick={onSubmit}
-            className="rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:px-4"
+            className="min-h-11 rounded-md bg-slate-950 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:px-4"
           >
-            Submit
+            Submit test
           </button>
         </div>
       </div>
