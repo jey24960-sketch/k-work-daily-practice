@@ -5,7 +5,10 @@ export default function Home() {
     <main className="min-h-dvh bg-slate-50 px-4 py-6 text-slate-950">
       <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-4xl flex-col justify-between">
         <header className="py-2">
-          <p className="text-lg font-bold">K-Work Tayari</p>
+          <p className="text-lg font-bold">K-Work Daily Practice</p>
+          <p className="text-sm font-medium text-slate-500">
+            K-Work दैनिक अभ्यास
+          </p>
         </header>
 
         <section className="py-8 sm:py-16">
@@ -14,12 +17,11 @@ export default function Home() {
               Free EPS-TOPIK Level Test
             </p>
             <h1 className="text-4xl font-bold leading-tight sm:text-5xl">
-              Check your EPS-TOPIK level in 20 questions
+              Free EPS-TOPIK practice for Nepali learners
             </h1>
             <p className="mt-4 max-w-xl text-lg leading-8 text-slate-600">
-              A mobile-friendly diagnostic for Nepali learners preparing to
-              work in Korea. Get an instant score, section weakness analysis,
-              and simple Nepali explanation support.
+              Start with a 20-question level test. Then practice a little every
+              day with K-Work Daily Practice.
             </p>
             <p className="mt-4 inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
               No login. No payment. Instant result.
@@ -42,7 +44,7 @@ export default function Home() {
             </div>
             <div className="mt-6 grid gap-2 text-sm font-medium text-slate-700 sm:grid-cols-3">
               {[
-                "Nepali explanations",
+                "English/Nepali explanations",
                 "Section weakness analysis",
                 "Mobile-friendly test",
               ].map((item) => (
@@ -59,14 +61,14 @@ export default function Home() {
                 href="/test"
                 className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
               >
-                Start Free 20-Question Test
+                Start Free Level Test
               </Link>
-              <Link
-                href="/daily"
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-slate-200 bg-white px-5 py-3 text-base font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+              <span
+                aria-disabled="true"
+                className="inline-flex min-h-12 w-full cursor-not-allowed items-center justify-center rounded-md border border-slate-200 bg-white px-5 py-3 text-base font-semibold text-slate-500 sm:w-auto"
               >
-                Try Today&rsquo;s 5-Minute Practice
-              </Link>
+                Try Today&rsquo;s Daily Practice
+              </span>
             </div>
           </div>
           <section className="mt-8 max-w-2xl">
@@ -106,7 +108,7 @@ export default function Home() {
 
         <footer className="border-t border-slate-200 py-5">
           <p className="max-w-2xl text-sm leading-6 text-slate-500">
-            K-Work Tayari is an independent practice service. It is not
+            K-Work Daily Practice is an independent practice service. It is not
             affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government
             agency.
           </p>

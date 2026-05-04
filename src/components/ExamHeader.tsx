@@ -16,7 +16,7 @@ export function ExamHeader({ secondsLeft, onSubmit }: ExamHeaderProps) {
             Free Level Test 01
           </p>
           <h1 className="truncate text-sm font-semibold text-slate-950 sm:text-base">
-            K-Work Tayari
+            K-Work Daily Practice
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-2">

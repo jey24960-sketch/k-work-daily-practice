@@ -39,6 +39,37 @@ const industries: OptInLead["industry"][] = [
   "Other",
 ];
 
+const resultPageCopy = {
+  noResultCta: "Start Free Level Test",
+  actionsTitle: "Recommended next actions",
+  actionsHelper: "Review your answers first, then retake or share your score.",
+  reviewAnswersCta: "Review My Answers",
+  retakeCta: "Retake Level Test",
+  shareScoreCta: "Share My Score",
+  optInJumpCta: "Get more free EPS practice sets",
+  shareTitle: "Share your score",
+  shareHelper:
+    "Share a safe practice-test score message. This is only a practice result.",
+  shareOpened: "Share sheet opened.",
+  copySuccess: "Score copied. You can paste it into WhatsApp or Messenger.",
+  copyUnavailable: "Copy is not available. Use the WhatsApp share button below.",
+  copyFailed: "Copy failed. Use the WhatsApp share button below.",
+  whatsappCta: "Share on WhatsApp",
+  facebookCta: "Facebook",
+  optInTitle: "Get more free EPS practice sets",
+  optInDescription:
+    "Leave your contact only if you want updates about new free practice sets from K-Work Daily Practice.",
+  optInButton: "Notify me about free practice sets",
+  optInConsent:
+    "By submitting, you agree to be contacted about free EPS practice sets from K-Work Daily Practice.",
+  optInMissingContact: "Please enter an email, phone, or WhatsApp contact.",
+  optInSaving: "Saving your request...",
+  optInFailure:
+    "We could not save your request right now. Your test result and review are still available.",
+  optInSuccess:
+    "Thank you. We will contact you only about K-Work Daily Practice practice updates.",
+} as const;
+
 export default function ResultPage() {
   const [result, setResult] = useState<StoredResult | null>(null);
   const [testAttemptId, setTestAttemptId] = useState<string | null>(null);
@@ -128,9 +159,9 @@ export default function ResultPage() {
     if (!result) return;
 
     const siteUrl = shareBaseUrl || window.location.origin || window.location.href;
-    const shareText = `I scored ${result.score}/20 on K-Work Tayari EPS-TOPIK Free Level Test. Try it here: ${siteUrl}`;
+    const shareText = getShareText(result.score, siteUrl);
     const shareData = {
-      title: "K-Work Tayari EPS-TOPIK Free Level Test",
+      title: "K-Work Daily Practice Free EPS-TOPIK Level Test",
       text: shareText,
       url: siteUrl,
     };
@@ -139,22 +170,20 @@ export default function ResultPage() {
       if (navigator.share) {
         void trackShareClick("web_share");
         await navigator.share(shareData);
-        setShareStatus("Share sheet opened.");
+        setShareStatus(resultPageCopy.shareOpened);
         return;
       }
 
       if (navigator.clipboard) {
         void trackShareClick("copy_link");
         await navigator.clipboard.writeText(shareText);
-        setShareStatus(
-          "Score copied. You can paste it into WhatsApp or Messenger.",
-        );
+        setShareStatus(resultPageCopy.copySuccess);
         return;
       }
 
-      setShareStatus("Copy is not available. Use the WhatsApp share button below.");
+      setShareStatus(resultPageCopy.copyUnavailable);
     } catch {
-      setShareStatus("Copy failed. Use the WhatsApp share button below.");
+      setShareStatus(resultPageCopy.copyFailed);
     }
   }
 
@@ -163,11 +192,11 @@ export default function ResultPage() {
     const contact = optIn.contact.trim();
 
     if (!contact) {
-      setOptInStatus("Please enter an email, phone, or WhatsApp contact.");
+      setOptInStatus(resultPageCopy.optInMissingContact);
       return;
     }
 
-    setOptInStatus("Saving your request...");
+    setOptInStatus(resultPageCopy.optInSaving);
     saveOptInLead({
       name: optIn.name.trim() || null,
       contact,
@@ -179,15 +208,11 @@ export default function ResultPage() {
       ...normalizeUtmParams(readClientUtmParams()),
     }).then((saved) => {
       if (!saved) {
-        setOptInStatus(
-          "We could not save your request right now. Your test result and review are still available.",
-        );
+        setOptInStatus(resultPageCopy.optInFailure);
         return;
       }
 
-      setOptInStatus(
-        "Thank you. We will contact you only about K-Work Tayari practice updates.",
-      );
+      setOptInStatus(resultPageCopy.optInSuccess);
     });
   }
 
@@ -215,15 +240,15 @@ export default function ResultPage() {
             href="/test"
             className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
           >
-            Start Free Test
+            {resultPageCopy.noResultCta}
           </Link>
         </section>
       </main>
     );
   }
 
-  const shareText = `I scored ${result.score}/20 on K-Work Tayari EPS-TOPIK Free Level Test. Try it here:`;
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareBaseUrl}`)}`;
+  const shareText = getShareText(result.score, shareBaseUrl);
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareBaseUrl)}`;
   const weakSectionNames = weakSections.map(
     ({ section }) => sectionLabels[section],
@@ -247,7 +272,7 @@ export default function ResultPage() {
         </div>
 
         <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Focus on these next</h2>
+          <h2 className="text-lg font-semibold">Weak Area Review</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Your weak areas:{" "}
             <span className="font-semibold text-slate-950">
@@ -277,44 +302,37 @@ export default function ResultPage() {
         </section>
 
         <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Recommended next actions</h2>
+          <h2 className="text-lg font-semibold">{resultPageCopy.actionsTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Start by reviewing {weakSectionNames[0] ?? "your weak area"}, then
-            retake or share when you are ready.
+            {resultPageCopy.actionsHelper}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <a
               href="#answer-review"
               className="inline-flex min-h-12 items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
-              Review My Answers
+              {resultPageCopy.reviewAnswersCta}
             </a>
-            <Link
-              href="/daily"
-              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-500"
-            >
-              Try Daily 5 Questions
-            </Link>
             <Link
               href="/test"
               onClick={handleRetake}
               className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
-              Retake Test
+              {resultPageCopy.retakeCta}
             </Link>
             <button
               type="button"
               onClick={handleShare}
               className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
-              Share My Score
+              {resultPageCopy.shareScoreCta}
             </button>
           </div>
           <a
             href="#free-practice-updates"
             className="mt-3 inline-flex text-sm font-semibold text-slate-700 underline-offset-4 hover:underline"
           >
-            Get more free EPS practice sets
+            {resultPageCopy.optInJumpCta}
           </a>
         </section>
 
@@ -323,10 +341,9 @@ export default function ResultPage() {
         </div>
 
         <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Share your score</h2>
+          <h2 className="text-lg font-semibold">{resultPageCopy.shareTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Share a safe practice-test score message. This is only a practice
-            result.
+            {resultPageCopy.shareHelper}
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <a
@@ -336,14 +353,14 @@ export default function ResultPage() {
               onClick={() => void trackShareClick("whatsapp")}
               className="inline-flex min-h-12 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-300"
             >
-              Share on WhatsApp
+              {resultPageCopy.whatsappCta}
             </a>
             <button
               type="button"
               onClick={handleShare}
               className="inline-flex min-h-12 items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
-              Share My Score
+              {resultPageCopy.shareScoreCta}
             </button>
             <a
               href={facebookUrl}
@@ -352,25 +369,16 @@ export default function ResultPage() {
               onClick={() => void trackShareClick("facebook")}
               className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
-              Facebook
+              {resultPageCopy.facebookCta}
             </a>
           </div>
           <p className="mt-3 text-xs leading-5 text-slate-500">
-            Share text: {shareText} {shareBaseUrl}
+            Share text: {shareText}
           </p>
           {shareStatus ? (
             <p className="mt-3 text-sm text-slate-600">{shareStatus}</p>
           ) : null}
         </section>
-
-        <div className="mt-5">
-          <Link
-            href="/"
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
-          >
-            Back to Home
-          </Link>
-        </div>
 
         <section
           id="free-practice-updates"
@@ -380,11 +388,10 @@ export default function ResultPage() {
             Optional
           </p>
           <h2 className="mt-1 text-lg font-semibold">
-            Get more free EPS practice sets
+            {resultPageCopy.optInTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Leave your contact only if you want updates about new free practice
-            sets.
+            {resultPageCopy.optInDescription}
           </p>
           <form onSubmit={handleOptInSubmit} className="mt-4 space-y-4">
             <label className="block">
@@ -444,11 +451,10 @@ export default function ResultPage() {
               type="submit"
               className="min-h-12 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
             >
-              Notify me about free practice sets
+              {resultPageCopy.optInButton}
             </button>
             <p className="text-xs leading-5 text-slate-500">
-              By submitting, you agree to be contacted about free EPS practice
-              sets from K-Work Tayari.
+              {resultPageCopy.optInConsent}
             </p>
             {optInStatus ? (
               <p className="text-sm leading-6 text-slate-600">{optInStatus}</p>
@@ -456,9 +462,18 @@ export default function ResultPage() {
           </form>
         </section>
 
+        <div className="mt-5">
+          <Link
+            href="/"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+          >
+            Back to Home
+          </Link>
+        </div>
+
         <footer className="mt-6 border-t border-slate-200 pt-5">
           <p className="text-sm leading-6 text-slate-500">
-            K-Work Tayari is an independent practice service. It is not
+            K-Work Daily Practice is an independent practice service. It is not
             affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government
             agency.
           </p>
@@ -472,6 +487,10 @@ function getContactType(contact: string) {
   if (contact.includes("@")) return "email";
   if (contact.replace(/\D/g, "").length >= 7) return "phone_or_whatsapp";
   return "other";
+}
+
+function getShareText(score: number, url: string) {
+  return `I scored ${score}/20 on K-Work Daily Practice Free EPS-TOPIK Level Test. Try it here: ${url}`;
 }
 
 function getStableAttemptId(result: StoredResult) {

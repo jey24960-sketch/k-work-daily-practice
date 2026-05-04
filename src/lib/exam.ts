@@ -30,13 +30,13 @@ export type StoredResult = {
   total: number;
 };
 
-export const USER_INFO_KEY = "k-work-tayari:user";
-export const EXAM_ANSWERS_KEY = "k-work-tayari:answers";
-export const RESULT_KEY = "k-work-tayari:result";
-export const TEST_ATTEMPT_ID_KEY = "k-work-tayari:test-attempt-id";
+export const USER_INFO_KEY = "k-work-daily-practice:user";
+export const EXAM_ANSWERS_KEY = "k-work-daily-practice:answers";
+export const RESULT_KEY = "k-work-daily-practice:result";
+export const TEST_ATTEMPT_ID_KEY = "k-work-daily-practice:test-attempt-id";
 export const TEST_ATTEMPT_PENDING_ID_KEY =
-  "k-work-tayari:test-attempt-pending-id";
-export const UTM_KEY = "k-work-tayari:utm";
+  "k-work-daily-practice:test-attempt-pending-id";
+export const UTM_KEY = "k-work-daily-practice:utm";
 
 export type ExamEventName =
   | "test_started"

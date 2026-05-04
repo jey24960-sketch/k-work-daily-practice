@@ -29,7 +29,10 @@ export default function TestIntroPage() {
     <main className="min-h-dvh bg-slate-50 px-4 py-6 text-slate-950">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          K-Work Tayari free test
+          K-Work Daily Practice free level test
+        </p>
+        <p className="mt-1 text-sm font-medium text-slate-500">
+          K-Work दैनिक अभ्यास
         </p>
         <h1 className="mt-3 text-3xl font-bold leading-tight">
           Start your free EPS-TOPIK level test
@@ -59,7 +62,7 @@ export default function TestIntroPage() {
           <div className="mt-4 grid gap-2 text-sm text-slate-700">
             {[
               "Score immediately after submitting",
-              "Weakest sections highlighted",
+              "Check your weak areas",
               "Answer review with explanations",
               "Retake option after the result",
             ].map((item) => (
@@ -103,13 +106,13 @@ export default function TestIntroPage() {
             onClick={handleStartTest}
             className="mt-6 min-h-14 w-full rounded-md bg-slate-950 px-5 py-4 text-base font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
           >
-            Start Free Test
+            Start Free Level Test
           </button>
         </section>
 
         <footer className="mt-6 border-t border-slate-200 pt-5">
           <p className="text-sm leading-6 text-slate-500">
-            K-Work Tayari is an independent practice service. It is not
+            K-Work Daily Practice is an independent practice service. It is not
             affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government
             agency.
           </p>

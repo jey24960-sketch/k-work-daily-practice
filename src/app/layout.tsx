@@ -12,10 +12,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = new URL("https://k-work-daily-practice.vercel.app");
+const siteTitle =
+  "K-Work Daily Practice | Free EPS-TOPIK Practice for Nepali Learners";
+const siteDescription =
+  "Free EPS-TOPIK practice for Nepali learners. Start with a 20-question level test, check your weak areas, and practice a little every day.";
+
 export const metadata: Metadata = {
-  title: "K-Work Tayari",
-  description:
-    "Free EPS-TOPIK level test for Nepali learners preparing to work in Korea.",
+  metadataBase: siteUrl,
+  title: siteTitle,
+  description: siteDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: siteUrl,
+    siteName: "K-Work Daily Practice",
+  },
+  twitter: {
+    card: "summary",
+    title: siteTitle,
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({

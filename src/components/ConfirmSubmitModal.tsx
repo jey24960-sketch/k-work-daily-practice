@@ -27,7 +27,7 @@ export function ConfirmSubmitModal({
           {unansweredCount === 1 ? "question" : "questions"}. Your result will
           show immediately, and you can review every answer.
         </p>
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <button
             type="button"
             onClick={onCancel}

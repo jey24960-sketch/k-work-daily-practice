@@ -119,6 +119,9 @@ export default function ExamPage() {
               style={{ width: `${progressPercent}%` }}
             />
           </div>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            The test submits automatically when the timer reaches 00:00.
+          </p>
         </div>
         <QuestionNavigator
           questions={questions}

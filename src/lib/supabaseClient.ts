@@ -9,7 +9,7 @@ export function getSupabaseClient() {
   if (!supabaseUrl || !supabaseAnonKey) {
     if (process.env.NODE_ENV === "development") {
       console.warn(
-        "Supabase env vars are missing. Skipping K-Work Tayari database writes.",
+        "Supabase env vars are missing. Skipping K-Work Daily Practice database writes.",
       );
     }
     return null;

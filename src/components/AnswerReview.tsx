@@ -11,7 +11,7 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
     <section id="answer-review" className="scroll-mt-20 space-y-3">
       <div>
         <h2 className="text-xl font-semibold text-slate-950">
-          Review My Answers
+          Answer Review
         </h2>
         <p className="mt-1 text-sm leading-6 text-slate-600">
           Check each answer and read the explanation before you retake.
