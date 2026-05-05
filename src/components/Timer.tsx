@@ -16,7 +16,7 @@ export function Timer({ seconds }: TimerProps) {
       className={`rounded-md border px-2.5 py-1.5 text-right ${
         urgent
           ? "border-red-200 bg-red-50 text-red-700"
-          : "border-slate-200 bg-slate-50 text-slate-800"
+          : "border-[#1e5fdc]/20 bg-[#1e5fdc]/10 text-[#1e5fdc]"
       }`}
       aria-live="polite"
     >

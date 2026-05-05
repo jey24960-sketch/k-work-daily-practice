@@ -70,3 +70,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ## MVP Scope
 
 Version 0.1 intentionally does not include login, payments, an admin dashboard, certificates, AI features, or government-style EPS/HRD Korea branding.
+
+## Question Content Data
+
+The local question pool schema is documented in [docs/content-data-structure.md](docs/content-data-structure.md). The app currently uses `getLevelTestSet("levelTestSetA")` for the 20-question Free Level Test; Daily Practice set assignment is prepared only for a future version.

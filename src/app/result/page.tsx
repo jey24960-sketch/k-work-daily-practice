@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { questions } from "../../../data/questions";
+import { getLevelTestSet } from "../../../data/questions";
 import { AnswerReview } from "@/components/AnswerReview";
 import { ResultSummary } from "@/components/ResultSummary";
 import { SectionBreakdown } from "@/components/SectionBreakdown";
+import { BRAND_ICON_PATH, DISCLAIMER } from "@/lib/brand";
 import {
   EXAM_ANSWERS_KEY,
   RESULT_KEY,
@@ -38,6 +40,7 @@ const industries: OptInLead["industry"][] = [
   "Fishery",
   "Other",
 ];
+const questions = getLevelTestSet("levelTestSetA");
 
 const resultPageCopy = {
   noResultCta: "Start Free Level Test",
@@ -230,15 +233,15 @@ export default function ResultPage() {
 
   if (!result || !sectionScores || weakSections.length === 0) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 text-slate-950">
-        <section className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-5 text-center shadow-sm">
+      <main className="flex min-h-dvh items-center justify-center bg-[#f4f6fb] px-4 text-slate-950">
+        <section className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-sm">
           <h1 className="text-xl font-semibold">No result found</h1>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Take the free level test to see your score and answer review.
           </p>
           <Link
             href="/test"
-            className="mt-5 inline-flex w-full items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[#1e5fdc] px-4 py-3 text-sm font-semibold text-white"
           >
             {resultPageCopy.noResultCta}
           </Link>
@@ -255,23 +258,33 @@ export default function ResultPage() {
   );
 
   return (
-    <main className="min-h-dvh bg-slate-50 px-4 py-6 text-slate-950">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-dvh bg-[#f4f6fb] px-4 py-5 text-slate-950">
+      <div className="mx-auto max-w-[430px]">
         <header className="mb-5">
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Free Level Test 01
-          </p>
+          <div className="mb-3 flex items-center gap-3">
+            <Image
+              src={BRAND_ICON_PATH}
+              alt="K-Work Daily Practice icon"
+              width={36}
+              height={36}
+              className="h-9 w-9 shrink-0 rounded-xl object-cover"
+            />
+            <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#1e5fdc]" />
+              Free Level Test 01
+            </p>
+          </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight">
             Your Diagnostic Result
           </h1>
         </header>
 
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="grid gap-4">
           <ResultSummary score={result.score} total={result.total} />
           <SectionBreakdown scores={sectionScores} />
         </div>
 
-        <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">Weak Area Review</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             Your weak areas:{" "}
@@ -283,7 +296,7 @@ export default function ResultPage() {
             {weakSectionNames.map((sectionName) => (
               <span
                 key={sectionName}
-                className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800"
+                className="rounded-full border border-[#1e5fdc]/20 bg-[#1e5fdc]/10 px-3 py-1.5 text-xs font-semibold text-[#1e5fdc]"
               >
                 {sectionName}
               </span>
@@ -301,7 +314,7 @@ export default function ResultPage() {
           </div>
         </section>
 
-        <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">{resultPageCopy.actionsTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             {resultPageCopy.actionsHelper}
@@ -309,21 +322,21 @@ export default function ResultPage() {
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <a
               href="#answer-review"
-              className="inline-flex min-h-12 items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#1e5fdc] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#174db8] focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
             >
               {resultPageCopy.reviewAnswersCta}
             </a>
             <Link
               href="/test"
               onClick={handleRetake}
-              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
             >
               {resultPageCopy.retakeCta}
             </Link>
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
             >
               {resultPageCopy.shareScoreCta}
             </button>
@@ -340,7 +353,7 @@ export default function ResultPage() {
           <AnswerReview questions={questions} answers={result.answers} />
         </div>
 
-        <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">{resultPageCopy.shareTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             {resultPageCopy.shareHelper}
@@ -351,14 +364,14 @@ export default function ResultPage() {
               target="_blank"
               rel="noreferrer"
               onClick={() => void trackShareClick("whatsapp")}
-              className="inline-flex min-h-12 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-[#1e5fdc]/20 bg-[#1e5fdc]/10 px-4 py-3 text-sm font-semibold text-[#1e5fdc] transition hover:bg-[#1e5fdc]/15 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/30"
             >
               {resultPageCopy.whatsappCta}
             </a>
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex min-h-12 items-center justify-center rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[#1e5fdc] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#174db8] focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
             >
               {resultPageCopy.shareScoreCta}
             </button>
@@ -367,7 +380,7 @@ export default function ResultPage() {
               target="_blank"
               rel="noreferrer"
               onClick={() => void trackShareClick("facebook")}
-              className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
             >
               {resultPageCopy.facebookCta}
             </a>
@@ -382,7 +395,7 @@ export default function ResultPage() {
 
         <section
           id="free-practice-updates"
-          className="mt-6 rounded-lg border border-dashed border-slate-300 bg-white p-5"
+          className="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-5"
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Optional
@@ -406,7 +419,7 @@ export default function ResultPage() {
                     name: event.target.value,
                   }))
                 }
-                className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-[#1e5fdc] focus:ring-2 focus:ring-[#1e5fdc]/15"
                 placeholder="Your name"
               />
             </label>
@@ -422,7 +435,7 @@ export default function ResultPage() {
                     contact: event.target.value,
                   }))
                 }
-                className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-[#1e5fdc] focus:ring-2 focus:ring-[#1e5fdc]/15"
                 placeholder="Email, phone, or WhatsApp"
               />
             </label>
@@ -438,7 +451,7 @@ export default function ResultPage() {
                     industry: event.target.value as OptInLead["industry"],
                   }))
                 }
-                className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-[#1e5fdc] focus:ring-2 focus:ring-[#1e5fdc]/15"
               >
                 {industries.map((industry) => (
                   <option key={industry} value={industry}>
@@ -449,7 +462,7 @@ export default function ResultPage() {
             </label>
             <button
               type="submit"
-              className="min-h-12 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+              className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 sm:w-auto"
             >
               {resultPageCopy.optInButton}
             </button>
@@ -465,18 +478,14 @@ export default function ResultPage() {
         <div className="mt-5">
           <Link
             href="/"
-            className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 sm:w-auto"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 sm:w-auto"
           >
             Back to Home
           </Link>
         </div>
 
-        <footer className="mt-6 border-t border-slate-200 pt-5">
-          <p className="text-sm leading-6 text-slate-500">
-            K-Work Daily Practice is an independent practice service. It is not
-            affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government
-            agency.
-          </p>
+        <footer className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-white/70 p-3">
+          <p className="text-xs leading-5 text-slate-500">{DISCLAIMER}</p>
         </footer>
       </div>
     </main>

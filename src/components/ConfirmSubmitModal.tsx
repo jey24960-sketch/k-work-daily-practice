@@ -17,7 +17,7 @@ export function ConfirmSubmitModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="submit-title"
-        className="w-full max-w-sm rounded-lg bg-white p-5 shadow-xl"
+        className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-xl"
       >
         <h2 id="submit-title" className="text-lg font-semibold text-slate-950">
           Submit your test?
@@ -31,14 +31,14 @@ export function ConfirmSubmitModal({
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-12 rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="min-h-12 rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
           >
             Keep working
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="min-h-12 rounded-md bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="min-h-12 rounded-2xl bg-[#1e5fdc] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#174db8] focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
           >
             Submit test
           </button>

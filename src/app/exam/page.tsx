@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { questions } from "../../../data/questions";
+import { getLevelTestSet } from "../../../data/questions";
 import { ConfirmSubmitModal } from "@/components/ConfirmSubmitModal";
 import { ExamHeader } from "@/components/ExamHeader";
 import { QuestionCard } from "@/components/QuestionCard";
@@ -17,11 +17,12 @@ import {
 import { createClientUuid } from "@/lib/clientUuid";
 
 const TEST_DURATION_SECONDS = 20 * 60;
+const questions = getLevelTestSet("levelTestSetA");
 
 export default function ExamPage() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, ChoiceKey>>({});
+  const [answers, setAnswers] = useState<Record<string, ChoiceKey>>({});
   const [secondsLeft, setSecondsLeft] = useState(TEST_DURATION_SECONDS);
   const [showConfirm, setShowConfirm] = useState(false);
   const submittedRef = useRef(false);
@@ -31,7 +32,7 @@ export default function ExamPage() {
     const storedAnswers = window.localStorage.getItem(EXAM_ANSWERS_KEY);
     queueMicrotask(() => {
       if (storedAnswers) {
-        setAnswers(JSON.parse(storedAnswers) as Record<number, ChoiceKey>);
+        setAnswers(JSON.parse(storedAnswers) as Record<string, ChoiceKey>);
       }
       answersLoadedRef.current = true;
     });
@@ -94,14 +95,14 @@ export default function ExamPage() {
   const currentQuestion = questions[currentIndex];
 
   return (
-    <main className="min-h-dvh bg-slate-50 text-slate-950">
+    <main className="min-h-dvh bg-[#f4f6fb] text-slate-950">
       <ExamHeader
         secondsLeft={secondsLeft}
         onSubmit={() => setShowConfirm(true)}
       />
 
-      <div className="mx-auto max-w-4xl px-4 py-5">
-        <div className="mb-3 rounded-lg border border-slate-200 bg-white p-3">
+      <div className="mx-auto max-w-[430px] px-4 py-5">
+        <div className="mb-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="font-semibold text-slate-950">
               Question {currentIndex + 1} of {questions.length}
@@ -115,7 +116,7 @@ export default function ExamPage() {
             aria-label={`${progressPercent}% of the test answered`}
           >
             <div
-              className="h-2 rounded-full bg-emerald-500"
+              className="h-2 rounded-full bg-[#1e5fdc]"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -153,7 +154,7 @@ export default function ExamPage() {
             type="button"
             onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
             disabled={currentIndex === 0}
-            className="min-h-12 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-45"
+            className="min-h-12 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 disabled:cursor-not-allowed disabled:opacity-45"
           >
             Previous
           </button>
@@ -165,7 +166,7 @@ export default function ExamPage() {
               )
             }
             disabled={currentIndex === questions.length - 1}
-            className="min-h-12 rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-45"
+            className="min-h-12 rounded-2xl bg-[#1e5fdc] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#174db8] focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 disabled:cursor-not-allowed disabled:opacity-45"
           >
             Next
           </button>

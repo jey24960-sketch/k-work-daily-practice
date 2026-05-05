@@ -1,13 +1,12 @@
-import type { Question } from "../../data/questions";
-import { sectionLabels } from "@/lib/exam";
+import { sectionLabels, type SectionScores } from "@/lib/exam";
 
 type SectionBreakdownProps = {
-  scores: Record<Question["section"], { correct: number; total: number }>;
+  scores: SectionScores;
 };
 
 export function SectionBreakdown({ scores }: SectionBreakdownProps) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
       <h2 className="text-lg font-semibold text-slate-950">
         Section Breakdown
       </h2>
@@ -19,11 +18,11 @@ export function SectionBreakdown({ scores }: SectionBreakdownProps) {
           return (
             <div
               key={section}
-              className="rounded-md border border-slate-200 bg-slate-50 p-3"
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
             >
               <div className="mb-1.5 flex items-center justify-between text-sm">
                 <span className="font-medium text-slate-700">
-                  {sectionLabels[section as Question["section"]]}
+                  {sectionLabels[section as keyof typeof sectionLabels]}
                 </span>
                 <span className="font-semibold text-slate-950">
                   {score.correct}/{score.total}
@@ -31,7 +30,7 @@ export function SectionBreakdown({ scores }: SectionBreakdownProps) {
               </div>
               <div className="h-2 rounded-full bg-slate-100">
                 <div
-                  className="h-2 rounded-full bg-emerald-500"
+                  className="h-2 rounded-full bg-[#1e5fdc]"
                   style={{ width: `${percent}%` }}
                 />
               </div>

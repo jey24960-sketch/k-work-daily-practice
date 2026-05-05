@@ -1,6 +1,12 @@
+import { getChoiceByKey } from "../../data/questions";
 import type { Question } from "../../data/questions";
+import type {
+  ChoiceKey,
+  QuestionSection,
+  SectionScoreKey,
+} from "@/types/questions";
 
-export type ChoiceKey = keyof Question["choices"];
+export type { ChoiceKey };
 
 export type TargetIndustry =
   | "Manufacturing"
@@ -24,7 +30,7 @@ export type UtmParams = {
 
 export type StoredResult = {
   attemptId?: string;
-  answers: Record<number, ChoiceKey>;
+  answers: Record<string, ChoiceKey>;
   submittedAt: string;
   score: number;
   total: number;
@@ -53,7 +59,24 @@ export function trackExamEvent(
   void metadata;
 }
 
-export const sectionLabels: Record<Question["section"], string> = {
+export type SectionScores = Record<
+  SectionScoreKey,
+  { correct: number; total: number }
+>;
+
+const sectionScoreKeys: Partial<Record<QuestionSection, SectionScoreKey>> = {
+  Vocabulary: "vocabulary",
+  Grammar: "grammar",
+  Reading: "reading",
+  "Workplace Korean": "workplace",
+};
+
+export const sectionLabels: Record<QuestionSection | SectionScoreKey, string> = {
+  Vocabulary: "Vocabulary",
+  Grammar: "Grammar",
+  Reading: "Reading",
+  "Workplace Korean": "Workplace Korean",
+  "Mixed Review": "Mixed Review",
   vocabulary: "Vocabulary",
   grammar: "Grammar",
   reading: "Reading",
@@ -75,25 +98,29 @@ export function getLevel(score: number) {
 
 export function scoreAnswers(
   questions: Question[],
-  answers: Record<number, ChoiceKey>,
+  answers: Record<string, ChoiceKey>,
 ) {
   return questions.reduce(
     (total, question) =>
-      answers[question.id] === question.correctAnswer ? total + 1 : total,
+      getChoiceByKey(question, answers[question.id]) === question.answer
+        ? total + 1
+        : total,
     0,
   );
 }
 
 export function getSectionScores(
   questions: Question[],
-  answers: Record<number, ChoiceKey>,
+  answers: Record<string, ChoiceKey>,
 ) {
   return questions.reduce(
     (acc, question) => {
-      const section = question.section;
+      const section = sectionScoreKeys[question.section];
+      if (!section) return acc;
+
       acc[section].total += 1;
 
-      if (answers[question.id] === question.correctAnswer) {
+      if (getChoiceByKey(question, answers[question.id]) === question.answer) {
         acc[section].correct += 1;
       }
 
@@ -104,25 +131,25 @@ export function getSectionScores(
       grammar: { correct: 0, total: 0 },
       reading: { correct: 0, total: 0 },
       workplace: { correct: 0, total: 0 },
-    } satisfies Record<Question["section"], { correct: number; total: number }>,
+    } satisfies SectionScores,
   );
 }
 
 export function getWeakestSection(
-  sectionScores: Record<Question["section"], { correct: number; total: number }>,
+  sectionScores: SectionScores,
 ) {
   return Object.entries(sectionScores).sort(([, a], [, b]) => {
     const aRate = a.total === 0 ? 0 : a.correct / a.total;
     const bRate = b.total === 0 ? 0 : b.correct / b.total;
     return aRate - bRate;
-  })[0] as [Question["section"], { correct: number; total: number }];
+  })[0] as [SectionScoreKey, { correct: number; total: number }];
 }
 
 export function getWeakestSections(
-  sectionScores: Record<Question["section"], { correct: number; total: number }>,
+  sectionScores: SectionScores,
   limit = 2,
 ) {
-  const sectionOrder: Question["section"][] = [
+  const sectionOrder: SectionScoreKey[] = [
     "vocabulary",
     "grammar",
     "reading",
@@ -141,8 +168,8 @@ export function getWeakestSections(
     .slice(0, limit);
 }
 
-export function getWeakAreaFeedback(section: Question["section"]) {
-  const feedback: Record<Question["section"], string> = {
+export function getWeakAreaFeedback(section: SectionScoreKey) {
+  const feedback: Record<SectionScoreKey, string> = {
     vocabulary:
       "Review daily words, workplace nouns, and common verbs. Small vocabulary gains can improve every section.",
     grammar:

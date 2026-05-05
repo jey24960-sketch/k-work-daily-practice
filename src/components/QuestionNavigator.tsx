@@ -5,7 +5,7 @@ import type { ChoiceKey } from "@/lib/exam";
 
 type QuestionNavigatorProps = {
   questions: Question[];
-  answers: Record<number, ChoiceKey>;
+  answers: Record<string, ChoiceKey>;
   currentIndex: number;
   onSelect: (index: number) => void;
 };
@@ -17,7 +17,7 @@ export function QuestionNavigator({
   onSelect,
 }: QuestionNavigatorProps) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-slate-500">
         <span>Question map</span>
         <span className="text-right">Answered questions are marked</span>
@@ -35,11 +35,11 @@ export function QuestionNavigator({
               key={question.id}
               type="button"
               onClick={() => onSelect(index)}
-              className={`flex h-11 min-w-0 items-center justify-center rounded-md border text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-slate-400 ${
+              className={`flex h-11 min-w-0 items-center justify-center rounded-xl border text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 ${
                 isCurrent
-                  ? "border-slate-950 bg-slate-950 text-white"
+                  ? "border-[#1e5fdc] bg-[#1e5fdc] text-white"
                   : isAnswered
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    ? "border-[#1e5fdc]/25 bg-[#1e5fdc]/10 text-[#1e5fdc]"
                     : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300"
               }`}
               aria-current={isCurrent ? "step" : undefined}

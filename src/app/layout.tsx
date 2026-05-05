@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { BRAND_ICON_PATH, BRAND_LOGO_PATH, BRAND_NAME, SITE_URL } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,7 +13,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = new URL("https://k-work-daily-practice.vercel.app");
+const siteUrl = new URL(SITE_URL);
 const siteTitle =
   "K-Work Daily Practice | Free EPS-TOPIK Practice for Nepali Learners";
 const siteDescription =
@@ -25,11 +26,23 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: BRAND_ICON_PATH,
+    apple: BRAND_ICON_PATH,
+  },
   openGraph: {
     title: siteTitle,
     description: siteDescription,
     url: siteUrl,
-    siteName: "K-Work Daily Practice",
+    siteName: BRAND_NAME,
+    images: [
+      {
+        url: BRAND_LOGO_PATH,
+        width: 1254,
+        height: 1254,
+        alt: "K-Work Daily Practice logo",
+      },
+    ],
   },
   twitter: {
     card: "summary",
