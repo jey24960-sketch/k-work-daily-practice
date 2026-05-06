@@ -24,6 +24,8 @@ export function QuestionNavigator({
       </div>
       <p className="mb-3 text-xs leading-5 text-slate-500">
         You can tap a question number to review it.
+        <br />
+        प्रश्न नम्बर थिचेर फेरि हेर्न सक्नुहुन्छ।
       </p>
       <nav
         className="grid grid-cols-5 gap-2 sm:grid-cols-10"

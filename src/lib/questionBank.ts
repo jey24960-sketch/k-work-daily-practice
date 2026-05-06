@@ -6,6 +6,7 @@ import {
   getReplacementPool as getLocalReplacementPool,
 } from "../../data/questions";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import { trackExamEvent } from "@/lib/pageEvents";
 import {
   validateQuestions,
   validateQuestionSetComposition,
@@ -40,6 +41,13 @@ type QuestionSetItemRow = {
   questions: QuestionRow | QuestionRow[] | null;
 };
 
+type QuestionBankFallbackReason =
+  | "missing_env"
+  | "query_error"
+  | "empty_data"
+  | "validation_failed"
+  | "unknown";
+
 export async function getLevelTestSet(
   setId: LevelTestSetId,
 ): Promise<PracticeQuestion[]> {
@@ -69,7 +77,9 @@ export async function getReplacementPool(
 
 export async function getActiveQuestions(): Promise<PracticeQuestion[]> {
   const supabase = getSupabaseClient();
-  if (!supabase) return getLocalActiveQuestions();
+  if (!supabase) {
+    return getFallbackQuestions("activeQuestions", "missing_env", getLocalActiveQuestions);
+  }
 
   try {
     const { data, error } = await supabase
@@ -80,23 +90,28 @@ export async function getActiveQuestions(): Promise<PracticeQuestion[]> {
       .eq("is_active", true)
       .order("id");
 
-    if (error || !data?.length) {
-      warnQuestionBankFallback("active questions query returned no usable data");
-      return getLocalActiveQuestions();
+    if (error) {
+      return getFallbackQuestions("activeQuestions", "query_error", getLocalActiveQuestions);
+    }
+
+    if (!data?.length) {
+      return getFallbackQuestions("activeQuestions", "empty_data", getLocalActiveQuestions);
     }
 
     const questions = data.map((row) => mapQuestionRow(row as QuestionRow));
     const issues = validateQuestions(questions);
 
     if (issues.length) {
-      warnQuestionBankFallback("active questions failed validation");
-      return getLocalActiveQuestions();
+      return getFallbackQuestions(
+        "activeQuestions",
+        "validation_failed",
+        getLocalActiveQuestions,
+      );
     }
 
     return questions;
   } catch {
-    warnQuestionBankFallback("active questions query failed");
-    return getLocalActiveQuestions();
+    return getFallbackQuestions("activeQuestions", "query_error", getLocalActiveQuestions);
   }
 }
 
@@ -105,7 +120,7 @@ async function getQuestionSet(
   fallback: () => PracticeQuestion[],
 ): Promise<PracticeQuestion[]> {
   const supabase = getSupabaseClient();
-  if (!supabase) return fallback();
+  if (!supabase) return getFallbackQuestions(setId, "missing_env", fallback);
 
   try {
     const { data, error } = await supabase
@@ -116,9 +131,12 @@ async function getQuestionSet(
       .eq("set_id", setId)
       .order("order_index", { ascending: true });
 
-    if (error || !data?.length) {
-      warnQuestionBankFallback(`${setId} query returned no usable data`);
-      return fallback();
+    if (error) {
+      return getFallbackQuestions(setId, "query_error", fallback);
+    }
+
+    if (!data?.length) {
+      return getFallbackQuestions(setId, "empty_data", fallback);
     }
 
     const questions = (data as QuestionSetItemRow[])
@@ -132,14 +150,38 @@ async function getQuestionSet(
     ];
 
     if (!questions.length || issues.length) {
-      warnQuestionBankFallback(`${setId} failed validation`);
-      return fallback();
+      return getFallbackQuestions(setId, "validation_failed", fallback);
     }
 
     return questions;
   } catch {
-    warnQuestionBankFallback(`${setId} query failed`);
-    return fallback();
+    return getFallbackQuestions(setId, "query_error", fallback);
+  }
+}
+
+function getFallbackQuestions(
+  setId: string,
+  reason: QuestionBankFallbackReason,
+  fallback: () => PracticeQuestion[],
+) {
+  warnQuestionBankFallback(`${setId} fallback reason: ${reason}`);
+  void trackExamEvent("question_bank_fallback", { setId, reason });
+
+  try {
+    const questions = fallback();
+    if (!questions.length) {
+      void trackExamEvent("exam_load_failed", {
+        setId,
+        reason: "empty_data",
+      });
+    }
+    return questions;
+  } catch {
+    void trackExamEvent("exam_load_failed", {
+      setId,
+      reason: "unknown",
+    });
+    return [];
   }
 }
 

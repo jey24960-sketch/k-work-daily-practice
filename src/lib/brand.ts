@@ -5,9 +5,9 @@ export const BRAND_COMPANION =
 
 export const SITE_URL = "https://k-work-daily-practice.vercel.app";
 
-export const BRAND_LOGO_PATH = "/brand/k-work-daily-practice-logo.png";
+export const BRAND_LOGO_PATH = "/brand/k-work-daily-practice-logo.webp";
 
-export const BRAND_ICON_PATH = "/brand/k-work-daily-practice-icon.png";
+export const BRAND_ICON_PATH = "/brand/k-work-daily-practice-icon.webp";
 
 export const DISCLAIMER =
   "K-Work Daily Practice is an independent practice service. It is not affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government agency.";

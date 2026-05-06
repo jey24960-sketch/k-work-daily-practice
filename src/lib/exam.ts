@@ -41,10 +41,13 @@ export type StoredResult = {
 
 export const USER_INFO_KEY = "k-work-daily-practice:user";
 export const EXAM_ANSWERS_KEY = "k-work-daily-practice:answers";
+export const EXAM_STARTED_AT_KEY = "k-work-daily-practice:exam-started-at";
 export const RESULT_KEY = "k-work-daily-practice:result";
 export const TEST_ATTEMPT_ID_KEY = "k-work-daily-practice:test-attempt-id";
 export const TEST_ATTEMPT_PENDING_ID_KEY =
   "k-work-daily-practice:test-attempt-pending-id";
+export const TEST_STARTED_TRACKED_KEY =
+  "k-work-daily-practice:test-started-tracked";
 export const UTM_KEY = "k-work-daily-practice:utm";
 
 export { trackExamEvent };

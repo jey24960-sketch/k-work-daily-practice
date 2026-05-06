@@ -9,9 +9,11 @@ import { SectionBreakdown } from "@/components/SectionBreakdown";
 import { BRAND_ICON_PATH, DISCLAIMER } from "@/lib/brand";
 import {
   EXAM_ANSWERS_KEY,
+  EXAM_STARTED_AT_KEY,
   RESULT_KEY,
   TEST_ATTEMPT_ID_KEY,
   TEST_ATTEMPT_PENDING_ID_KEY,
+  TEST_STARTED_TRACKED_KEY,
   USER_INFO_KEY,
   getSectionScores,
   getWeakAreaFeedback,
@@ -57,8 +59,8 @@ const resultPageCopy = {
   copySuccess: "Score copied. You can paste it into WhatsApp or Messenger.",
   copyUnavailable: "Copy is not available. Use the WhatsApp share button below.",
   copyFailed: "Copy failed. Use the WhatsApp share button below.",
+  shareCancelled: "Share cancelled.",
   whatsappCta: "Share on WhatsApp",
-  facebookCta: "Facebook",
   optInTitle: "Get more free EPS practice sets",
   optInDescription:
     "Leave your contact only if you want updates about new free practice sets from K-Work Daily Practice.",
@@ -74,7 +76,8 @@ const resultPageCopy = {
     "Thank you. We will contact you only about K-Work Daily Practice updates.",
 } as const;
 
-const WEAK_SECTION_RATE = 0.6;
+const WEAK_SECTION_RATE = 0.7;
+const SET_ID = "levelTestSetA";
 
 export default function ResultPage() {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
@@ -192,7 +195,7 @@ export default function ResultPage() {
     resultViewedTrackedRef.current = true;
     void trackExamEvent("result_viewed", {
       attemptId: result.attemptId ?? testAttemptId,
-      setId: "levelTestSetA",
+      setId: SET_ID,
       totalQuestions: result.total,
       totalScore: result.score,
       weakestSections: weakSections.map(({ section }) => sectionLabels[section]),
@@ -203,13 +206,15 @@ export default function ResultPage() {
     void trackExamEvent("retake_clicked", {
       attemptId: testAttemptId ?? result?.attemptId ?? null,
       previousScore: result?.score ?? null,
-      setId: "levelTestSetA",
+      setId: SET_ID,
     });
     window.localStorage.removeItem(RESULT_KEY);
     window.localStorage.removeItem(EXAM_ANSWERS_KEY);
+    window.localStorage.removeItem(EXAM_STARTED_AT_KEY);
     window.localStorage.removeItem(USER_INFO_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_ID_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
+    window.localStorage.removeItem(TEST_STARTED_TRACKED_KEY);
   }
 
   async function handleShare() {
@@ -225,21 +230,26 @@ export default function ResultPage() {
 
     try {
       if (navigator.share) {
-        void trackShareClick("web_share");
         await navigator.share(shareData);
+        void trackShareClick("web_share");
         setShareStatus(resultPageCopy.shareOpened);
         return;
       }
 
       if (navigator.clipboard) {
-        void trackShareClick("copy_link");
         await navigator.clipboard.writeText(shareText);
+        void trackShareClick("copy_link");
         setShareStatus(resultPageCopy.copySuccess);
         return;
       }
 
       setShareStatus(resultPageCopy.copyUnavailable);
-    } catch {
+    } catch (error) {
+      if (isShareCancelError(error)) {
+        setShareStatus(resultPageCopy.shareCancelled);
+        return;
+      }
+
       setShareStatus(resultPageCopy.copyFailed);
     }
   }
@@ -258,7 +268,7 @@ export default function ResultPage() {
     void trackExamEvent("opt_in_submitted", {
       attemptId: testAttemptId ?? result?.attemptId ?? null,
       contactType,
-      setId: "levelTestSetA",
+      setId: SET_ID,
       targetIndustry: optIn.industry || null,
       totalScore: result?.score ?? null,
     });
@@ -288,7 +298,7 @@ export default function ResultPage() {
         result?.attemptId ??
         window.localStorage.getItem(TEST_ATTEMPT_PENDING_ID_KEY),
       channel,
-      setId: "levelTestSetA",
+      setId: SET_ID,
       totalScore: result?.score ?? null,
     });
     await saveShareEvent({
@@ -355,12 +365,11 @@ export default function ResultPage() {
 
   const shareText = getShareText(result.score, shareBaseUrl);
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareBaseUrl)}`;
-  const hasWeakSection = Object.values(sectionScores).some(
+  const focusSections = weakSections.filter(
     ({ correct, total }) => total > 0 && correct / total < WEAK_SECTION_RATE,
   );
-  const strongOverall = result.score >= 18 && !hasWeakSection;
-  const weakSectionNames = weakSections.map(
+  const strongOverall = focusSections.length === 0;
+  const focusSectionNames = focusSections.map(
     ({ section }) => sectionLabels[section],
   );
 
@@ -406,11 +415,11 @@ export default function ResultPage() {
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 Start with:{" "}
                 <span className="font-semibold text-slate-950">
-                  {weakSectionNames.join(", ")}
+                  {focusSectionNames.join(", ")}
                 </span>
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {weakSectionNames.map((sectionName) => (
+                {focusSectionNames.map((sectionName) => (
                   <span
                     key={sectionName}
                     className="rounded-full border border-[#1e5fdc]/20 bg-[#1e5fdc]/10 px-3 py-1.5 text-xs font-semibold text-[#1e5fdc]"
@@ -420,7 +429,7 @@ export default function ResultPage() {
                 ))}
               </div>
               <div className="mt-3 space-y-2">
-                {weakSections.map(({ section, correct, total }) => (
+                {focusSections.map(({ section, correct, total }) => (
                   <p key={section} className="text-sm leading-6 text-slate-700">
                     <span className="font-semibold text-slate-950">
                       {sectionLabels[section]} ({correct}/{total}):
@@ -460,6 +469,11 @@ export default function ResultPage() {
               {resultPageCopy.shareScoreCta}
             </button>
           </div>
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            Same questions for now - Set B is coming soon.
+            <br />
+            अहिले उही प्रश्नहरू फेरि अभ्यास हुन्छन् — Set B चाँडै आउँदैछ।
+          </p>
           <a
             href="#free-practice-updates"
             className="mt-3 inline-flex text-sm font-semibold text-slate-700 underline-offset-4 hover:underline"
@@ -490,15 +504,6 @@ export default function ResultPage() {
             >
               {resultPageCopy.shareScoreCta}
             </button>
-            <a
-              href={facebookUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => void trackShareClick("facebook")}
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
-            >
-              {resultPageCopy.facebookCta}
-            </a>
           </div>
           {shareStatus ? (
             <p className="mt-3 text-sm text-slate-600">{shareStatus}</p>
@@ -620,6 +625,11 @@ function getContactType(contact: string) {
 
 function getShareText(score: number, url: string) {
   return `I scored ${score}/20 on K-Work Daily Practice Free EPS-TOPIK Level Test. Try it here: ${url}`;
+}
+
+function isShareCancelError(error: unknown) {
+  if (!(error instanceof DOMException)) return false;
+  return error.name === "AbortError" || error.name === "NotAllowedError";
 }
 
 function getStableAttemptId(result: StoredResult) {

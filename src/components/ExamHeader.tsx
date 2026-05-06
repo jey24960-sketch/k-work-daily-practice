@@ -51,6 +51,9 @@ export function ExamHeader({
             }`}
           >
             Submit test
+            <span className="block text-[10px] font-semibold">
+              परीक्षा बुझाउनुहोस्
+            </span>
           </button>
         </div>
       </div>

@@ -13,7 +13,9 @@ export type ExamEventName =
   | "result_viewed"
   | "share_clicked"
   | "opt_in_submitted"
-  | "retake_clicked";
+  | "retake_clicked"
+  | "question_bank_fallback"
+  | "exam_load_failed";
 
 type JsonValue =
   | string
@@ -36,6 +38,8 @@ const sensitiveMetadataKeys = [
   "phone",
   "whatsapp",
 ];
+
+const safeMetadataKeys = ["contacttype", "optinchannel"];
 
 export async function trackExamEvent(
   eventName: ExamEventName,
@@ -133,6 +137,8 @@ function toJsonValue(value: unknown): JsonValue | undefined {
 
 function isSensitiveKey(key: string) {
   const normalizedKey = key.toLowerCase();
+  if (safeMetadataKeys.includes(normalizedKey)) return false;
+
   return sensitiveMetadataKeys.some((sensitiveKey) =>
     normalizedKey.includes(sensitiveKey),
   );

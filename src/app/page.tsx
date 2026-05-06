@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { PageEventTracker } from "@/components/PageEventTracker";
 import {
   BRAND_COMPANION,
   BRAND_ICON_PATH,
@@ -7,7 +8,6 @@ import {
   BRAND_NAME,
   DISCLAIMER,
 } from "@/lib/brand";
-import { PageEventTracker } from "@/components/PageEventTracker";
 
 const benefits = [
   "English/Nepali explanations",

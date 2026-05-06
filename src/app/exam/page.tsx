@@ -8,7 +8,9 @@ import { QuestionCard } from "@/components/QuestionCard";
 import { QuestionNavigator } from "@/components/QuestionNavigator";
 import {
   EXAM_ANSWERS_KEY,
+  EXAM_STARTED_AT_KEY,
   RESULT_KEY,
+  TEST_STARTED_TRACKED_KEY,
   scoreAnswers,
   trackExamEvent,
   type ChoiceKey,
@@ -18,6 +20,7 @@ import { getLevelTestSet } from "@/lib/questionBank";
 import type { PracticeQuestion } from "@/types/questions";
 
 const TEST_DURATION_SECONDS = 20 * 60;
+const SET_ID = "levelTestSetA";
 
 export default function ExamPage() {
   const router = useRouter();
@@ -33,13 +36,31 @@ export default function ExamPage() {
   const answersLoadedRef = useRef(false);
 
   useEffect(() => {
+    getOrCreateExamStartedAt();
+
+    if (!window.localStorage.getItem(TEST_STARTED_TRACKED_KEY)) {
+      window.localStorage.setItem(TEST_STARTED_TRACKED_KEY, "true");
+      void trackExamEvent("test_started", {
+        directAccess: true,
+        setId: SET_ID,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     let isCurrent = true;
 
-    getLevelTestSet("levelTestSetA")
+    getLevelTestSet(SET_ID)
       .then((loadedQuestions) => {
         if (!isCurrent) return;
 
         setQuestions(loadedQuestions);
+        if (!loadedQuestions.length) {
+          void trackExamEvent("exam_load_failed", {
+            reason: "empty_data",
+            setId: SET_ID,
+          });
+        }
         setQuestionLoadError(
           loadedQuestions.length
             ? ""
@@ -48,6 +69,10 @@ export default function ExamPage() {
       })
       .catch(() => {
         if (!isCurrent) return;
+        void trackExamEvent("exam_load_failed", {
+          reason: "unknown",
+          setId: SET_ID,
+        });
         setQuestionLoadError(
           "We could not load the level test questions right now.",
         );
@@ -96,7 +121,7 @@ export default function ExamPage() {
     void trackExamEvent("test_submitted", {
       answeredCount: answered,
       attemptId,
-      setId: "levelTestSetA",
+      setId: SET_ID,
       submitType: reason,
       totalQuestions: questions.length,
       unansweredCount: questions.length - answered,
@@ -113,24 +138,28 @@ export default function ExamPage() {
       }),
     );
     window.localStorage.removeItem(EXAM_ANSWERS_KEY);
+    window.localStorage.removeItem(EXAM_STARTED_AT_KEY);
+    window.localStorage.removeItem(TEST_STARTED_TRACKED_KEY);
     router.push("/result");
   }, [answers, questions, router]);
 
   useEffect(() => {
     if (!questions.length) return;
 
-    const timer = window.setInterval(() => {
-      setSecondsLeft((current) => {
-        if (current <= 1) {
-          window.clearInterval(timer);
-          setAutoSubmitMessage("Time's up - submitting your test.");
-          submitExam("auto");
-          return 0;
-        }
+    const tick = () => {
+      if (submittedRef.current) return;
 
-        return current - 1;
-      });
-    }, 1000);
+      const remaining = getSecondsRemaining(getOrCreateExamStartedAt());
+      setSecondsLeft(remaining);
+
+      if (remaining <= 0) {
+        setAutoSubmitMessage("Time's up - submitting your test.");
+        submitExam("auto");
+      }
+    };
+
+    tick();
+    const timer = window.setInterval(tick, 1000);
 
     return () => window.clearInterval(timer);
   }, [questions.length, submitExam]);
@@ -186,6 +215,9 @@ export default function ExamPage() {
             <span className="font-semibold text-slate-950">
               Question {currentIndex + 1} of {questions.length}
             </span>
+            <span className="font-semibold text-[#1e5fdc]">
+              प्रश्न {currentIndex + 1} / {questions.length}
+            </span>
             <span className="font-medium text-slate-600">
               {answeredCount}/{questions.length} answered
             </span>
@@ -226,7 +258,7 @@ export default function ExamPage() {
                 questionId: currentQuestion.id,
                 questionIndex: currentIndex,
                 section: currentQuestion.section,
-                setId: "levelTestSetA",
+                setId: SET_ID,
               });
               setAnswers((current) => ({
                 ...current,
@@ -269,4 +301,23 @@ export default function ExamPage() {
       ) : null}
     </main>
   );
+}
+
+function getOrCreateExamStartedAt() {
+  const storedStartedAt = Number(
+    window.localStorage.getItem(EXAM_STARTED_AT_KEY),
+  );
+
+  if (Number.isFinite(storedStartedAt) && storedStartedAt > 0) {
+    return storedStartedAt;
+  }
+
+  const startedAt = Date.now();
+  window.localStorage.setItem(EXAM_STARTED_AT_KEY, startedAt.toString());
+  return startedAt;
+}
+
+function getSecondsRemaining(startedAt: number) {
+  const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+  return Math.max(0, TEST_DURATION_SECONDS - elapsedSeconds);
 }

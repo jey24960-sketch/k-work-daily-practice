@@ -11,9 +11,11 @@ import {
 } from "@/lib/brand";
 import {
   EXAM_ANSWERS_KEY,
+  EXAM_STARTED_AT_KEY,
   RESULT_KEY,
   TEST_ATTEMPT_ID_KEY,
   TEST_ATTEMPT_PENDING_ID_KEY,
+  TEST_STARTED_TRACKED_KEY,
   USER_INFO_KEY,
   readClientUtmParams,
   trackExamEvent,
@@ -33,6 +35,10 @@ export default function TestIntroPage() {
     window.localStorage.removeItem(RESULT_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_ID_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
+    window.localStorage.removeItem(EXAM_STARTED_AT_KEY);
+    window.localStorage.removeItem(TEST_STARTED_TRACKED_KEY);
+    window.localStorage.setItem(EXAM_STARTED_AT_KEY, Date.now().toString());
+    window.localStorage.setItem(TEST_STARTED_TRACKED_KEY, "true");
     void trackExamEvent("test_started", { setId: "levelTestSetA" });
     router.push("/exam");
   }
@@ -61,35 +67,35 @@ export default function TestIntroPage() {
         </div>
 
         <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-        <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#1e5fdc]" />
-          EPS-TOPIK Level Test
-        </p>
-        <h1 className="mt-3 text-[26px] font-bold leading-tight tracking-tight">
-          Start your free EPS-TOPIK level test
-        </h1>
-        <p className="mt-2 text-sm font-semibold leading-6 text-[#1e5fdc]">
-          लगइन बिना तुरुन्त नतिजा
-        </p>
-        <p className="mt-3 text-base leading-7 text-slate-600">
-          No login or contact information is needed before the test.
-        </p>
+          <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#1e5fdc]" />
+            EPS-TOPIK Level Test
+          </p>
+          <h1 className="mt-3 text-[26px] font-bold leading-tight tracking-tight">
+            Start your free EPS-TOPIK level test
+          </h1>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#1e5fdc]">
+            लगइन बिना तुरुन्त नतिजा
+          </p>
+          <p className="mt-3 text-base leading-7 text-slate-600">
+            No login or contact information is needed before the test.
+          </p>
 
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          {[
-            "20 questions",
-            "About 20 minutes",
-            "Instant result",
-            "No login required",
-          ].map((item) => (
-            <div
-              key={item}
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
-            >
-              <p className="text-sm font-semibold text-slate-700">{item}</p>
-            </div>
-          ))}
-        </div>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            {[
+              "20 questions",
+              "About 20 minutes",
+              "Instant result",
+              "No login required",
+            ].map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
+              >
+                <p className="text-sm font-semibold text-slate-700">{item}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5">

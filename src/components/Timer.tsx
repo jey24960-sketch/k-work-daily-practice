@@ -26,6 +26,7 @@ export function Timer({ seconds }: TimerProps) {
       <span className="block text-[10px] font-semibold uppercase tracking-wide">
         Time left
       </span>
+      <span className="block text-[10px] font-semibold">बाँकी समय</span>
       <span className="block font-mono text-sm font-semibold">
         {minutes}:{remainingSeconds}
       </span>

@@ -4,6 +4,8 @@ K-Work Daily Practice uses lightweight Supabase event rows for public-test analy
 
 `public.page_events` stores anonymous funnel events only. It should not contain names, emails, phone numbers, WhatsApp numbers, or opt-in contact values. Actual voluntary contact stays only in `public.opt_in_leads`.
 
+`share_clicked` counts confirmed share/copy/link actions. Web Share cancellations are not counted as successful shares.
+
 ## Funnel Counts
 
 ```sql
@@ -120,6 +122,86 @@ select
   round(avg(reading_score), 2) as average_reading,
   round(avg(workplace_score), 2) as average_workplace
 from public.test_attempts;
+```
+
+## Median And Percentile Scores
+
+```sql
+select
+  percentile_cont(0.5) within group (order by total_score) as median_score,
+  percentile_cont(0.25) within group (order by total_score) as p25_score,
+  percentile_cont(0.75) within group (order by total_score) as p75_score,
+  percentile_cont(0.9) within group (order by total_score) as p90_score
+from public.test_attempts;
+```
+
+## Share Channel Breakdown
+
+```sql
+select
+  coalesce(metadata->>'channel', 'unknown') as channel,
+  count(*) as confirmed_share_clicks,
+  count(distinct session_id) as sharing_sessions
+from public.page_events
+where event_name = 'share_clicked'
+group by channel
+order by confirmed_share_clicks desc;
+```
+
+## Drop-Off Step By Session
+
+```sql
+with session_steps as (
+  select
+    session_id,
+    bool_or(event_name = 'landing_viewed') as landed,
+    bool_or(event_name = 'test_intro_viewed') as saw_intro,
+    bool_or(event_name = 'test_started') as started,
+    bool_or(event_name = 'test_submitted') as submitted,
+    bool_or(event_name = 'result_viewed') as saw_result
+  from public.page_events
+  where session_id is not null
+  group by session_id
+)
+select
+  case
+    when not landed then 'no_landing_event'
+    when not saw_intro then 'dropped_before_intro'
+    when not started then 'dropped_before_start'
+    when not submitted then 'dropped_during_exam'
+    when not saw_result then 'dropped_before_result'
+    else 'completed_result'
+  end as final_step,
+  count(*) as sessions
+from session_steps
+group by final_step
+order by sessions desc;
+```
+
+## Question Bank Fallback Counts
+
+```sql
+select
+  metadata->>'setId' as set_id,
+  metadata->>'reason' as reason,
+  count(*) as fallback_events
+from public.page_events
+where event_name = 'question_bank_fallback'
+group by set_id, reason
+order by fallback_events desc;
+```
+
+## Exam Load Failures
+
+```sql
+select
+  metadata->>'setId' as set_id,
+  metadata->>'reason' as reason,
+  count(*) as load_failures
+from public.page_events
+where event_name = 'exam_load_failed'
+group by set_id, reason
+order by load_failures desc;
 ```
 
 ## Weakest Sections Frequency
