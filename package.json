@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "question-bank:seed": "node scripts/question-bank-seed.mjs",
+    "question-bank:seed:supabase": "node scripts/seedQuestionBank.mjs",
+    "question-bank:validate": "node scripts/question-bank-seed.mjs --validate"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.1",

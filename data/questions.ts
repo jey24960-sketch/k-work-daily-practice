@@ -1,10 +1,5 @@
-import type {
-  ChoiceKey,
-  PracticeQuestion,
-  QuestionSection,
-} from "@/types/questions";
-
-const nepaliPlaceholder = "Nepali explanation coming soon.";
+import { getChoiceByKey, getChoiceEntries, getCorrectChoiceKey } from "@/lib/questionUtils";
+import type { PracticeQuestion, QuestionSection } from "@/types/questions";
 
 export const ORIGINAL_QUESTION_NOTICE =
   "This is an original practice question. It is not an official EPS-TOPIK question and is not copied from any official textbook or past exam.";
@@ -41,7 +36,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "물",
     "explanationEn": "'물' means water in Korean.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'물' को अर्थ कोरियन भाषामा पानी हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK everyday-life and workplace vocabulary preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -73,7 +68,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "일합니다",
     "explanationEn": "'일합니다' means 'work' and fits the factory sentence.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'일합니다' को अर्थ काम गर्छु/गर्छ भन्ने हुन्छ, त्यसैले कारखानाको वाक्यमा मिल्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK everyday-life and workplace vocabulary preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -105,7 +100,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "머리 보호",
     "explanationEn": "'안전모' is a safety helmet used to protect the head.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'안전모' टाउको जोगाउने सुरक्षा हेल्मेट हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK everyday-life and workplace vocabulary preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -137,7 +132,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "느리다",
     "explanationEn": "The opposite of '빠르다' (fast) is '느리다' (slow).",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'빠르다' को उल्टो अर्थ '느리다' अर्थात् ढिलो हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK everyday-life and workplace vocabulary preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -169,7 +164,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "고치다",
     "explanationEn": "'고치다' means to fix or repair something.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'고치다' को अर्थ बिग्रिएको कुरा मिलाउनु वा मर्मत गर्नु हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK everyday-life and workplace vocabulary preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -201,7 +196,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "에서",
     "explanationEn": "'에서' is used with a place of origin in this sentence.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "यो वाक्यमा आएको ठाउँ नेपल हो, त्यसैले उद्गम स्थान देखाउन '에서' प्रयोग हुन्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with common EPS-TOPIK grammar preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -233,7 +228,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "저는 한국어를 공부합니다.",
     "explanationEn": "'한국어를 공부합니다' correctly marks Korean as the object of study.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'한국어를 공부합니다' मा '를' ले 한국어 लाई पढ्ने वस्तुका रूपमा जनाउँछ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with common EPS-TOPIK grammar preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -265,7 +260,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "있겠습니다",
     "explanationEn": "The sentence talks about tomorrow, so the future form '있겠습니다' fits.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "वाक्यले भोलिको कुरा गर्छ, त्यसैले भविष्य जनाउने '있겠습니다' मिल्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with common EPS-TOPIK grammar preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -297,7 +292,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "일이 많아서 피곤합니다.",
     "explanationEn": "'-아서/어서' shows reason, so '일이 많아서' means 'because there is much work.'",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'-아서/어서' ले कारण जनाउँछ, त्यसैले '일이 많아서' को अर्थ काम धेरै भएकाले हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with common EPS-TOPIK grammar preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -329,7 +324,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "확인해야",
     "explanationEn": "'-아/어야 합니다' means 'must,' so workers must check the machine before work.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'-아/어야 합니다' ले गर्नै पर्छ भन्ने अर्थ दिन्छ, त्यसैले काम अघि मेसिन जाँच गर्नुपर्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with common EPS-TOPIK grammar preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -361,7 +356,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "12시",
     "explanationEn": "The text says he eats lunch at 12 o'clock.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "पाठमा उसले १२ बजे खाना खान्छ भनिएको छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK short reading and notice comprehension preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -393,7 +388,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "수지 씨는 오늘 쉽니다.",
     "explanationEn": "She does not go to work on Sunday, so she rests today.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "आइतबार काममा जाँदैन भनिएकाले सुजी आज आराम गर्छिन्।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK short reading and notice comprehension preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -425,7 +420,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "담배 피우기",
     "explanationEn": "The notice says smoking is not allowed in the break room.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "सूचनामा विश्राम कक्षमा धूम्रपान गर्न पाइँदैन भनिएको छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK short reading and notice comprehension preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -457,7 +452,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "감기에 걸려서",
     "explanationEn": "He went to the hospital because he had a cold.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "जिहुनलाई रुघा लागेको थियो, त्यसैले ऊ अस्पताल गएको हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK short reading and notice comprehension preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -489,7 +484,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "8시 30분",
     "explanationEn": "The new start time is 8:30 a.m., so workers should arrive by then.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "नयाँ सुरु हुने समय बिहान ८:३० हो, त्यसैले कर्मचारीहरू त्यतिबेलासम्म आउनुपर्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general EPS-TOPIK short reading and notice comprehension preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -521,7 +516,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "회의실",
     "explanationEn": "'회의실' means meeting room.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'회의실' को अर्थ बैठक कोठा हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general workplace Korean safety and communication preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -553,7 +548,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "관리자에게 말합니다.",
     "explanationEn": "In a workplace injury, you should first tell a supervisor or manager.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "काम गर्ने ठाउँमा चोट लागेपछि पहिले व्यवस्थापकलाई भन्नुपर्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general workplace Korean safety and communication preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -585,7 +580,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "기계를 바로 멈추고 보고합니다.",
     "explanationEn": "If a machine sounds unusual, stop it safely and report the issue.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "मेसिनले अनौठो आवाज निकाल्दा सुरक्षित रूपमा रोक्नुपर्छ र रिपोर्ट गर्नुपर्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general workplace Korean safety and communication preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -617,7 +612,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "박스를 창고에 둡니다.",
     "explanationEn": "'창고에 놓아 주세요' means 'please put it in the storage room.'",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'창고에 놓아 주세요' को अर्थ कृपया सामान गोदाममा राख्नुहोस् हो।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general workplace Korean safety and communication preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -649,7 +644,7 @@ export const questionPool: PracticeQuestion[] = [
     ],
     "answer": "작업 전에 장갑을 껴야 합니다.",
     "explanationEn": "'착용해야 합니다' means 'must wear,' so gloves are required before work.",
-    "explanationNe": nepaliPlaceholder,
+    "explanationNe": "'착용해야 합니다' को अर्थ लगाउनै पर्छ हो, त्यसैले काम अघि पन्जा लगाउनुपर्छ।",
     "sourceType": "original",
     "referenceScope": "Original practice item aligned with general workplace Korean safety and communication preparation scope.",
     "officialNotice": ORIGINAL_QUESTION_NOTICE
@@ -722,21 +717,7 @@ export function validateLevelTestSetComposition(setId: string) {
   );
 }
 
-export function getChoiceEntries(question: Question): [ChoiceKey, string][] {
-  return question.options.map((option, index) => [
-    ["A", "B", "C", "D"][index] as ChoiceKey,
-    option,
-  ]);
-}
-
-export function getChoiceByKey(question: Question, key?: ChoiceKey) {
-  if (!key) return undefined;
-  return question.options[["A", "B", "C", "D"].indexOf(key)];
-}
-
-export function getCorrectChoiceKey(question: Question) {
-  return getChoiceEntries(question).find(([, option]) => option === question.answer)?.[0];
-}
+export { getChoiceByKey, getChoiceEntries, getCorrectChoiceKey };
 
 // The app intentionally uses only Level Test Set A for v0.1.1. Daily Practice
 // set assignment is prepared for a future v0.1.2 candidate, but no route/UI is

@@ -1,5 +1,4 @@
-import { getChoiceByKey } from "../../data/questions";
-import type { Question } from "../../data/questions";
+import { getChoiceByKey, type Question } from "@/lib/questionUtils";
 import type {
   ChoiceKey,
   QuestionSection,

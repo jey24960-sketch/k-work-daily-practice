@@ -2,7 +2,7 @@
 
 K-Work Daily Practice is an independent EPS-TOPIK practice service for Nepali learners preparing to work in Korea.
 
-Version 0.1 is a free mobile-first EPS-TOPIK level test MVP with local question data, localStorage state, scoring, section feedback, and answer review.
+Version 0.1 is a free mobile-first EPS-TOPIK level test MVP with a Supabase-backed question bank, local Set A fallback, localStorage state, scoring, section feedback, and answer review.
 
 K-Work Daily Practice is not affiliated with HRD Korea, EPS Korea, EPS Nepal, or any government agency. The questions are original practice questions and are not official exam questions.
 
@@ -11,7 +11,8 @@ K-Work Daily Practice is not affiliated with HRD Korea, EPS Korea, EPS Nepal, or
 - Next.js
 - TypeScript
 - Tailwind CSS
-- Local TypeScript question data
+- Supabase question bank
+- Local TypeScript Set A fallback
 - Browser localStorage
 
 ## Run Locally
@@ -39,6 +40,20 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 Create the lightweight validation tables by pasting [supabase/schema.sql](supabase/schema.sql) into the Supabase SQL Editor.
+
+Create the question bank by running [supabase/question_bank_schema.sql](supabase/question_bank_schema.sql), then seed with either:
+
+```bash
+npm run question-bank:seed
+```
+
+and paste [supabase/question_bank_seed.sql](supabase/question_bank_seed.sql), or run the secure local service-role seed:
+
+```bash
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key npm run question-bank:seed:supabase
+```
+
+Never expose `SUPABASE_SERVICE_ROLE_KEY` in browser code or prefix it with `NEXT_PUBLIC`.
 
 ### Local Supabase Insert Test
 
@@ -73,4 +88,4 @@ Version 0.1 intentionally does not include login, payments, an admin dashboard, 
 
 ## Question Content Data
 
-The local question pool schema is documented in [docs/content-data-structure.md](docs/content-data-structure.md). The app currently uses `getLevelTestSet("levelTestSetA")` for the 20-question Free Level Test; Daily Practice set assignment is prepared only for a future version.
+The question bank schema is documented in [docs/question-bank-database.md](docs/question-bank-database.md). The app loads `levelTestSetA` from Supabase first and falls back to the local Set A from `data/questions.ts` if the DB fetch fails or returns invalid data. Daily Practice remains unimplemented.

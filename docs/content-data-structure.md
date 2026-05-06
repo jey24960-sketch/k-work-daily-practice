@@ -1,8 +1,8 @@
 # Content Data Structure
 
-K-Work Daily Practice stores practice questions in local TypeScript data for now. The current app uses only `getLevelTestSet("levelTestSetA")` for the 20-question Free Level Test.
+K-Work Daily Practice now stores production question data in Supabase. The local TypeScript file remains as seed/import source material and as a development fallback, but the app loads `levelTestSetA` through the DB-backed question bank layer.
 
-Supabase is not used for question storage at this stage. Supabase remains only for optional validation inserts such as test attempts, opt-in leads, and share events.
+See `docs/question-bank-database.md` for the Supabase schema, RLS policy summary, seeding workflow, and service-role-key rules.
 
 ## Planned Operating Pool
 
@@ -39,7 +39,7 @@ Each item in `data/questions.ts` must match `PracticeQuestion` from `src/types/q
 - `options`: exactly four answer options
 - `answer`: exact correct option text
 - `explanationEn`: English explanation
-- `explanationNe`: Nepali explanation, or `Nepali explanation coming soon.`
+- `explanationNe`: Nepali explanation; placeholder text is not allowed in seed data
 - `sourceType`: always `original`
 - `referenceScope`: broad scope note for topic and difficulty alignment
 - `officialNotice`: standard originality notice
@@ -192,4 +192,4 @@ Use these exact `referenceScope` values:
 - `levelTestSetA` is the only set used by the current Free Level Test.
 - `levelTestSetB` is prepared for future A/B testing or retake variants, but it is not exposed.
 - Daily Practice is data-prepared only; no `/daily` route or UI is implemented.
-- Marketing and replacement pool questions are data-prepared only; no UI or database storage is implemented.
+- Marketing and replacement pool questions are data-prepared only; no UI is implemented.

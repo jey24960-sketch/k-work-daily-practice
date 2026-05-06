@@ -1,6 +1,6 @@
 "use client";
 
-import type { Question } from "../../data/questions";
+import type { Question } from "@/lib/questionUtils";
 import type { ChoiceKey } from "@/lib/exam";
 
 type QuestionNavigatorProps = {

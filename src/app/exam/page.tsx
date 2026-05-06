@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getLevelTestSet } from "../../../data/questions";
 import { ConfirmSubmitModal } from "@/components/ConfirmSubmitModal";
 import { ExamHeader } from "@/components/ExamHeader";
 import { QuestionCard } from "@/components/QuestionCard";
@@ -15,18 +14,51 @@ import {
   type ChoiceKey,
 } from "@/lib/exam";
 import { createClientUuid } from "@/lib/clientUuid";
+import { getLevelTestSet } from "@/lib/questionBank";
+import type { PracticeQuestion } from "@/types/questions";
 
 const TEST_DURATION_SECONDS = 20 * 60;
-const questions = getLevelTestSet("levelTestSetA");
 
 export default function ExamPage() {
   const router = useRouter();
+  const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
+  const [questionLoadError, setQuestionLoadError] = useState("");
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, ChoiceKey>>({});
   const [secondsLeft, setSecondsLeft] = useState(TEST_DURATION_SECONDS);
   const [showConfirm, setShowConfirm] = useState(false);
   const submittedRef = useRef(false);
   const answersLoadedRef = useRef(false);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    getLevelTestSet("levelTestSetA")
+      .then((loadedQuestions) => {
+        if (!isCurrent) return;
+
+        setQuestions(loadedQuestions);
+        setQuestionLoadError(
+          loadedQuestions.length
+            ? ""
+            : "We could not load the level test questions right now.",
+        );
+      })
+      .catch(() => {
+        if (!isCurrent) return;
+        setQuestionLoadError(
+          "We could not load the level test questions right now.",
+        );
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoadingQuestions(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   useEffect(() => {
     const storedAnswers = window.localStorage.getItem(EXAM_ANSWERS_KEY);
@@ -45,13 +77,16 @@ export default function ExamPage() {
 
   const unansweredCount = useMemo(
     () => questions.filter((question) => !answers[question.id]).length,
-    [answers],
+    [answers, questions],
   );
   const answeredCount = questions.length - unansweredCount;
-  const progressPercent = Math.round((answeredCount / questions.length) * 100);
+  const progressPercent = questions.length
+    ? Math.round((answeredCount / questions.length) * 100)
+    : 0;
 
   const submitExam = useCallback(() => {
     if (submittedRef.current) return;
+    if (!questions.length) return;
     submittedRef.current = true;
 
     const score = scoreAnswers(questions, answers);
@@ -74,9 +109,11 @@ export default function ExamPage() {
     );
     window.localStorage.removeItem(EXAM_ANSWERS_KEY);
     router.push("/result");
-  }, [answers, router]);
+  }, [answers, questions, router]);
 
   useEffect(() => {
+    if (!questions.length) return;
+
     const timer = window.setInterval(() => {
       setSecondsLeft((current) => {
         if (current <= 1) {
@@ -90,9 +127,43 @@ export default function ExamPage() {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [submitExam]);
+  }, [questions.length, submitExam]);
 
   const currentQuestion = questions[currentIndex];
+
+  if (isLoadingQuestions) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-[#f4f6fb] px-4 text-slate-950">
+        <section className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+          <h1 className="text-xl font-semibold">Loading level test</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Preparing your questions...
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (questionLoadError || !currentQuestion) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-[#f4f6fb] px-4 text-slate-950">
+        <section className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+          <h1 className="text-xl font-semibold">Questions unavailable</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {questionLoadError ||
+              "We could not load the level test questions right now."}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[#1e5fdc] px-4 py-3 text-sm font-semibold text-white"
+          >
+            Try again
+          </button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-dvh bg-[#f4f6fb] text-slate-950">

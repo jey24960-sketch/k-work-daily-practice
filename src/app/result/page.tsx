@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { getLevelTestSet } from "../../../data/questions";
 import { AnswerReview } from "@/components/AnswerReview";
 import { ResultSummary } from "@/components/ResultSummary";
 import { SectionBreakdown } from "@/components/SectionBreakdown";
@@ -23,6 +22,7 @@ import {
   type OptInLead,
   type StoredResult,
 } from "@/lib/exam";
+import { getLevelTestSet } from "@/lib/questionBank";
 import {
   normalizeUtmParams,
   saveOptInLead,
@@ -31,6 +31,7 @@ import {
   type SaveShareEventPayload,
 } from "@/lib/supabaseEvents";
 import { createClientUuid } from "@/lib/clientUuid";
+import type { PracticeQuestion } from "@/types/questions";
 
 const industries: OptInLead["industry"][] = [
   "Manufacturing",
@@ -40,7 +41,6 @@ const industries: OptInLead["industry"][] = [
   "Fishery",
   "Other",
 ];
-const questions = getLevelTestSet("levelTestSetA");
 
 const resultPageCopy = {
   noResultCta: "Start Free Level Test",
@@ -74,6 +74,10 @@ const resultPageCopy = {
 } as const;
 
 export default function ResultPage() {
+  const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
+  const [questionLoadError, setQuestionLoadError] = useState("");
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
+  const [isLoadingResult, setIsLoadingResult] = useState(true);
   const [result, setResult] = useState<StoredResult | null>(null);
   const [testAttemptId, setTestAttemptId] = useState<string | null>(null);
   const [shareStatus, setShareStatus] = useState("");
@@ -87,27 +91,55 @@ export default function ResultPage() {
   });
 
   useEffect(() => {
+    let isCurrent = true;
+
+    getLevelTestSet("levelTestSetA")
+      .then((loadedQuestions) => {
+        if (!isCurrent) return;
+        setQuestions(loadedQuestions);
+        setQuestionLoadError(
+          loadedQuestions.length
+            ? ""
+            : "We could not load the answer review questions right now.",
+        );
+      })
+      .catch(() => {
+        if (!isCurrent) return;
+        setQuestionLoadError(
+          "We could not load the answer review questions right now.",
+        );
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoadingQuestions(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const storedResult = window.localStorage.getItem(RESULT_KEY);
-    if (storedResult) {
-      queueMicrotask(() =>
-        setResult(JSON.parse(storedResult) as StoredResult),
-      );
-      trackExamEvent("result_viewed");
-    }
-    queueMicrotask(() =>
-      setShareBaseUrl(window.location.origin || window.location.href),
-    );
     const storedAttemptId = window.localStorage.getItem(TEST_ATTEMPT_ID_KEY);
-    if (storedAttemptId) {
-      queueMicrotask(() => setTestAttemptId(storedAttemptId));
-      window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
-    }
+
+    queueMicrotask(() => {
+      if (storedResult) {
+        setResult(JSON.parse(storedResult) as StoredResult);
+        trackExamEvent("result_viewed");
+      }
+      setShareBaseUrl(window.location.origin || window.location.href);
+      if (storedAttemptId) {
+        setTestAttemptId(storedAttemptId);
+        window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
+      }
+      setIsLoadingResult(false);
+    });
   }, []);
 
   const sectionScores = useMemo(() => {
-    if (!result) return null;
+    if (!result || !questions.length) return null;
     return getSectionScores(questions, result.answers);
-  }, [result]);
+  }, [result, questions]);
 
   const weakSections = useMemo(() => {
     if (!sectionScores) return [];
@@ -229,6 +261,38 @@ export default function ResultPage() {
       channel,
       ...normalizeUtmParams(readClientUtmParams()),
     });
+  }
+
+  if (isLoadingResult || (isLoadingQuestions && result)) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-[#f4f6fb] px-4 text-slate-950">
+        <section className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+          <h1 className="text-xl font-semibold">Loading result</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Preparing your score and answer review...
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (questionLoadError && result) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-[#f4f6fb] px-4 text-slate-950">
+        <section className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-sm">
+          <h1 className="text-xl font-semibold">Review unavailable</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {questionLoadError}
+          </p>
+          <Link
+            href="/test"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-[#1e5fdc] px-4 py-3 text-sm font-semibold text-white"
+          >
+            Retake Level Test
+          </Link>
+        </section>
+      </main>
+    );
   }
 
   if (!result || !sectionScores || weakSections.length === 0) {

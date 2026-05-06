@@ -1,7 +1,6 @@
 "use client";
 
-import { getChoiceEntries } from "../../data/questions";
-import type { Question } from "../../data/questions";
+import { getChoiceEntries, type Question } from "@/lib/questionUtils";
 import { difficultyLabels, sectionLabels, type ChoiceKey } from "@/lib/exam";
 
 type QuestionCardProps = {
