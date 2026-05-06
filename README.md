@@ -32,7 +32,7 @@ npm run build
 
 ## Supabase Environment
 
-Supabase is optional in local development. Without these variables, the test and result pages still work, but anonymous attempt storage, result-page opt-in submission, and share tracking are skipped.
+Supabase is optional in local development. Without these variables, the test and result pages still work, but anonymous attempt storage, page-event tracking, result-page opt-in submission, and share tracking are skipped.
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
@@ -40,6 +40,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 Create the lightweight validation tables by pasting [supabase/schema.sql](supabase/schema.sql) into the Supabase SQL Editor.
+
+Create first-100-user page event tracking by running [supabase/page_events_schema.sql](supabase/page_events_schema.sql). This enables anonymous inserts into `public.page_events` for landing, test, result, share, opt-in, and retake events.
 
 Create the question bank by running [supabase/question_bank_schema.sql](supabase/question_bank_schema.sql), then seed with either:
 
@@ -66,21 +68,23 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-4. Run `npm run dev`.
-5. Open [http://localhost:3000](http://localhost:3000).
-6. Complete one 20-question test and reach the result page.
-7. Confirm one new row exists in `public.test_attempts`.
-8. Submit the result-page opt-in form with a contact value.
-9. Confirm one new row exists in `public.opt_in_leads`.
-10. Click a share button.
-11. Confirm one new row exists in `public.share_events`.
+4. Run [supabase/page_events_schema.sql](supabase/page_events_schema.sql) if you want to verify public-test event tracking.
+5. Run `npm run dev`.
+6. Open [http://localhost:3000](http://localhost:3000).
+7. Complete one 20-question test and reach the result page.
+8. Confirm one new row exists in `public.test_attempts`.
+9. Submit the result-page opt-in form with a contact value.
+10. Confirm one new row exists in `public.opt_in_leads`.
+11. Click a share button.
+12. Confirm one new row exists in `public.share_events`.
+13. Confirm rows exist in `public.page_events` if the page-events schema was applied.
 
 ### Vercel Supabase Insert Test
 
 1. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel Project Settings.
 2. Redeploy the project so the public Supabase values are included in the client bundle.
 3. Complete the same test flow on the live URL.
-4. Confirm rows in Supabase Table Editor for `test_attempts`, `opt_in_leads`, and `share_events`.
+4. Confirm rows in Supabase Table Editor for `test_attempts`, `opt_in_leads`, `share_events`, and `page_events`.
 
 ## MVP Scope
 
@@ -89,3 +93,7 @@ Version 0.1 intentionally does not include login, payments, an admin dashboard, 
 ## Question Content Data
 
 The question bank schema is documented in [docs/question-bank-database.md](docs/question-bank-database.md). The app loads `levelTestSetA` from Supabase first and falls back to the local Set A from `data/questions.ts` if the DB fetch fails or returns invalid data. Daily Practice remains unimplemented.
+
+## Public-Test Analytics
+
+Lightweight funnel export queries are documented in [docs/analytics-export.md](docs/analytics-export.md). The app writes anonymous `page_events` rows only after [supabase/page_events_schema.sql](supabase/page_events_schema.sql) is applied.

@@ -28,6 +28,7 @@ export default function ExamPage() {
   const [answers, setAnswers] = useState<Record<string, ChoiceKey>>({});
   const [secondsLeft, setSecondsLeft] = useState(TEST_DURATION_SECONDS);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [autoSubmitMessage, setAutoSubmitMessage] = useState("");
   const submittedRef = useRef(false);
   const answersLoadedRef = useRef(false);
 
@@ -84,18 +85,22 @@ export default function ExamPage() {
     ? Math.round((answeredCount / questions.length) * 100)
     : 0;
 
-  const submitExam = useCallback(() => {
+  const submitExam = useCallback((reason: "manual" | "auto" = "manual") => {
     if (submittedRef.current) return;
     if (!questions.length) return;
     submittedRef.current = true;
 
-    const score = scoreAnswers(questions, answers);
-    trackExamEvent("test_submitted", {
-      score,
-      unanswered: questions.length - Object.keys(answers).length,
-    });
-
     const attemptId = createClientUuid();
+    const answered = Object.keys(answers).length;
+    const score = scoreAnswers(questions, answers);
+    void trackExamEvent("test_submitted", {
+      answeredCount: answered,
+      attemptId,
+      setId: "levelTestSetA",
+      submitType: reason,
+      totalQuestions: questions.length,
+      unansweredCount: questions.length - answered,
+    });
 
     window.localStorage.setItem(
       RESULT_KEY,
@@ -118,7 +123,8 @@ export default function ExamPage() {
       setSecondsLeft((current) => {
         if (current <= 1) {
           window.clearInterval(timer);
-          submitExam();
+          setAutoSubmitMessage("Time's up - submitting your test.");
+          submitExam("auto");
           return 0;
         }
 
@@ -169,6 +175,8 @@ export default function ExamPage() {
     <main className="min-h-dvh bg-[#f4f6fb] text-slate-950">
       <ExamHeader
         secondsLeft={secondsLeft}
+        answeredCount={answeredCount}
+        totalQuestions={questions.length}
         onSubmit={() => setShowConfirm(true)}
       />
 
@@ -192,8 +200,14 @@ export default function ExamPage() {
             />
           </div>
           <p className="mt-2 text-xs leading-5 text-slate-500">
-            The test submits automatically when the timer reaches 00:00.
+            Your progress is saved on this device. The test submits
+            automatically when the timer reaches 00:00.
           </p>
+          {autoSubmitMessage ? (
+            <p className="mt-2 rounded-xl bg-yellow-50 px-3 py-2 text-xs font-semibold text-yellow-800">
+              {autoSubmitMessage}
+            </p>
+          ) : null}
         </div>
         <QuestionNavigator
           questions={questions}
@@ -208,9 +222,11 @@ export default function ExamPage() {
             questionNumber={currentIndex + 1}
             selectedAnswer={answers[currentQuestion.id]}
             onAnswer={(answer) => {
-              trackExamEvent("question_answered", {
+              void trackExamEvent("question_answered", {
                 questionId: currentQuestion.id,
-                questionNumber: currentIndex + 1,
+                questionIndex: currentIndex,
+                section: currentQuestion.section,
+                setId: "levelTestSetA",
               });
               setAnswers((current) => ({
                 ...current,

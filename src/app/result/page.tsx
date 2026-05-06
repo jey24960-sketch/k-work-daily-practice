@@ -45,7 +45,7 @@ const industries: OptInLead["industry"][] = [
 const resultPageCopy = {
   noResultCta: "Start Free Level Test",
   actionsTitle: "Recommended next actions",
-  actionsHelper: "Review your answers first, then retake or share your score.",
+  actionsHelper: "Share your result, get optional updates, or review answers.",
   reviewAnswersCta: "Review My Answers",
   retakeCta: "Retake Level Test",
   shareScoreCta: "Share My Score",
@@ -62,6 +62,7 @@ const resultPageCopy = {
   optInTitle: "Get more free EPS practice sets",
   optInDescription:
     "Leave your contact only if you want updates about new free practice sets from K-Work Daily Practice.",
+  optInPrivacy: "We will not share your contact.",
   optInButton: "Notify me about free practice sets",
   optInConsent:
     "By submitting, you agree to be contacted about free EPS practice sets from K-Work Daily Practice.",
@@ -70,8 +71,10 @@ const resultPageCopy = {
   optInFailure:
     "We could not save your request right now. Your test result and review are still available.",
   optInSuccess:
-    "Thank you. We will contact you only about K-Work Daily Practice practice updates.",
+    "Thank you. We will contact you only about K-Work Daily Practice updates.",
 } as const;
+
+const WEAK_SECTION_RATE = 0.6;
 
 export default function ResultPage() {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
@@ -84,10 +87,11 @@ export default function ResultPage() {
   const [shareBaseUrl, setShareBaseUrl] = useState("");
   const [optInStatus, setOptInStatus] = useState("");
   const attemptInsertStartedRef = useRef(false);
+  const resultViewedTrackedRef = useRef(false);
   const [optIn, setOptIn] = useState<OptInLead>({
     name: "",
     contact: "",
-    industry: "Manufacturing",
+    industry: "",
   });
 
   useEffect(() => {
@@ -124,8 +128,8 @@ export default function ResultPage() {
 
     queueMicrotask(() => {
       if (storedResult) {
-        setResult(JSON.parse(storedResult) as StoredResult);
-        trackExamEvent("result_viewed");
+        const parsedResult = JSON.parse(storedResult) as StoredResult;
+        setResult(parsedResult);
       }
       setShareBaseUrl(window.location.origin || window.location.href);
       if (storedAttemptId) {
@@ -181,8 +185,26 @@ export default function ResultPage() {
     });
   }, [result, sectionScores, weakSections]);
 
+  useEffect(() => {
+    if (!result || !sectionScores || weakSections.length === 0) return;
+    if (resultViewedTrackedRef.current) return;
+
+    resultViewedTrackedRef.current = true;
+    void trackExamEvent("result_viewed", {
+      attemptId: result.attemptId ?? testAttemptId,
+      setId: "levelTestSetA",
+      totalQuestions: result.total,
+      totalScore: result.score,
+      weakestSections: weakSections.map(({ section }) => sectionLabels[section]),
+    });
+  }, [result, sectionScores, testAttemptId, weakSections]);
+
   function handleRetake() {
-    trackExamEvent("retake_clicked");
+    void trackExamEvent("retake_clicked", {
+      attemptId: testAttemptId ?? result?.attemptId ?? null,
+      previousScore: result?.score ?? null,
+      setId: "levelTestSetA",
+    });
     window.localStorage.removeItem(RESULT_KEY);
     window.localStorage.removeItem(EXAM_ANSWERS_KEY);
     window.localStorage.removeItem(USER_INFO_KEY);
@@ -231,11 +253,19 @@ export default function ResultPage() {
       return;
     }
 
+    const contactType = getContactType(contact);
     setOptInStatus(resultPageCopy.optInSaving);
+    void trackExamEvent("opt_in_submitted", {
+      attemptId: testAttemptId ?? result?.attemptId ?? null,
+      contactType,
+      setId: "levelTestSetA",
+      targetIndustry: optIn.industry || null,
+      totalScore: result?.score ?? null,
+    });
     saveOptInLead({
       name: optIn.name.trim() || null,
       contact,
-      contact_type: getContactType(contact),
+      contact_type: contactType,
       target_industry: optIn.industry || null,
       total_score: result?.score ?? null,
       consent: true,
@@ -252,6 +282,15 @@ export default function ResultPage() {
   }
 
   async function trackShareClick(channel: SaveShareEventPayload["channel"]) {
+    void trackExamEvent("share_clicked", {
+      attemptId:
+        testAttemptId ??
+        result?.attemptId ??
+        window.localStorage.getItem(TEST_ATTEMPT_PENDING_ID_KEY),
+      channel,
+      setId: "levelTestSetA",
+      totalScore: result?.score ?? null,
+    });
     await saveShareEvent({
       attempt_id:
         testAttemptId ??
@@ -317,6 +356,10 @@ export default function ResultPage() {
   const shareText = getShareText(result.score, shareBaseUrl);
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareBaseUrl)}`;
+  const hasWeakSection = Object.values(sectionScores).some(
+    ({ correct, total }) => total > 0 && correct / total < WEAK_SECTION_RATE,
+  );
+  const strongOverall = result.score >= 18 && !hasWeakSection;
   const weakSectionNames = weakSections.map(
     ({ section }) => sectionLabels[section],
   );
@@ -335,11 +378,11 @@ export default function ResultPage() {
             />
             <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600">
               <span className="h-1.5 w-1.5 rounded-full bg-[#1e5fdc]" />
-              Free Level Test 01
+              EPS-TOPIK Level Test
             </p>
           </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight">
-            Your Diagnostic Result
+            Your result
           </h1>
         </header>
 
@@ -349,33 +392,45 @@ export default function ResultPage() {
         </div>
 
         <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">Weak Area Review</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Your weak areas:{" "}
-            <span className="font-semibold text-slate-950">
-              {weakSectionNames.join(", ")}
-            </span>
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {weakSectionNames.map((sectionName) => (
-              <span
-                key={sectionName}
-                className="rounded-full border border-[#1e5fdc]/20 bg-[#1e5fdc]/10 px-3 py-1.5 text-xs font-semibold text-[#1e5fdc]"
-              >
-                {sectionName}
-              </span>
-            ))}
-          </div>
-          <div className="mt-3 space-y-2">
-            {weakSections.map(({ section, correct, total }) => (
-              <p key={section} className="text-sm leading-6 text-slate-700">
-                <span className="font-semibold text-slate-950">
-                  {sectionLabels[section]} ({correct}/{total}):
-                </span>{" "}
-                {getWeakAreaFeedback(section)}
+          {strongOverall ? (
+            <>
+              <h2 className="text-lg font-semibold">Strong overall</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Your section scores are balanced and your total score is high.
+                Keep practicing regularly so this level stays steady.
               </p>
-            ))}
-          </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-semibold">Focus areas</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Start with:{" "}
+                <span className="font-semibold text-slate-950">
+                  {weakSectionNames.join(", ")}
+                </span>
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {weakSectionNames.map((sectionName) => (
+                  <span
+                    key={sectionName}
+                    className="rounded-full border border-[#1e5fdc]/20 bg-[#1e5fdc]/10 px-3 py-1.5 text-xs font-semibold text-[#1e5fdc]"
+                  >
+                    {sectionName}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-3 space-y-2">
+                {weakSections.map(({ section, correct, total }) => (
+                  <p key={section} className="text-sm leading-6 text-slate-700">
+                    <span className="font-semibold text-slate-950">
+                      {sectionLabels[section]} ({correct}/{total}):
+                    </span>{" "}
+                    {getWeakAreaFeedback(section)}
+                  </p>
+                ))}
+              </div>
+            </>
+          )}
         </section>
 
         <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -413,10 +468,6 @@ export default function ResultPage() {
           </a>
         </section>
 
-        <div className="mt-6">
-          <AnswerReview questions={questions} answers={result.answers} />
-        </div>
-
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">{resultPageCopy.shareTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -449,9 +500,6 @@ export default function ResultPage() {
               {resultPageCopy.facebookCta}
             </a>
           </div>
-          <p className="mt-3 text-xs leading-5 text-slate-500">
-            Share text: {shareText}
-          </p>
           {shareStatus ? (
             <p className="mt-3 text-sm text-slate-600">{shareStatus}</p>
           ) : null}
@@ -469,6 +517,9 @@ export default function ResultPage() {
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             {resultPageCopy.optInDescription}
+          </p>
+          <p className="mt-2 text-sm font-semibold text-slate-700">
+            {resultPageCopy.optInPrivacy}
           </p>
           <form onSubmit={handleOptInSubmit} className="mt-4 space-y-4">
             <label className="block">
@@ -517,6 +568,7 @@ export default function ResultPage() {
                 }
                 className="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-3 py-3 text-base outline-none transition focus:border-[#1e5fdc] focus:ring-2 focus:ring-[#1e5fdc]/15"
               >
+                <option value="">Select industry (optional)</option>
                 {industries.map((industry) => (
                   <option key={industry} value={industry}>
                     {industry}
@@ -526,7 +578,7 @@ export default function ResultPage() {
             </label>
             <button
               type="submit"
-              className="min-h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 sm:w-auto"
+              className="min-h-12 w-full rounded-2xl bg-[#1e5fdc] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#174db8] focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 sm:w-auto"
             >
               {resultPageCopy.optInButton}
             </button>
@@ -538,6 +590,10 @@ export default function ResultPage() {
             ) : null}
           </form>
         </section>
+
+        <div className="mt-6">
+          <AnswerReview questions={questions} answers={result.answers} />
+        </div>
 
         <div className="mt-5">
           <Link

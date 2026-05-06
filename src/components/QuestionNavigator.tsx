@@ -22,6 +22,9 @@ export function QuestionNavigator({
         <span>Question map</span>
         <span className="text-right">Answered questions are marked</span>
       </div>
+      <p className="mb-3 text-xs leading-5 text-slate-500">
+        You can tap a question number to review it.
+      </p>
       <nav
         className="grid grid-cols-5 gap-2 sm:grid-cols-10"
         aria-label="Question navigation"

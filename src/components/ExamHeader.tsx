@@ -6,10 +6,19 @@ import { Timer } from "./Timer";
 
 type ExamHeaderProps = {
   secondsLeft: number;
+  answeredCount: number;
+  totalQuestions: number;
   onSubmit: () => void;
 };
 
-export function ExamHeader({ secondsLeft, onSubmit }: ExamHeaderProps) {
+export function ExamHeader({
+  secondsLeft,
+  answeredCount,
+  totalQuestions,
+  onSubmit,
+}: ExamHeaderProps) {
+  const enoughAnswered = totalQuestions > 0 && answeredCount >= totalQuestions / 2;
+
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-[430px] items-center justify-between gap-2 px-3 py-3">
@@ -23,7 +32,7 @@ export function ExamHeader({ secondsLeft, onSubmit }: ExamHeaderProps) {
           />
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-              Free Level Test 01
+              EPS-TOPIK Level Test
             </p>
             <h1 className="truncate text-sm font-semibold text-slate-950 sm:text-base">
               K-Work Daily Practice
@@ -35,7 +44,11 @@ export function ExamHeader({ secondsLeft, onSubmit }: ExamHeaderProps) {
           <button
             type="button"
             onClick={onSubmit}
-            className="min-h-11 rounded-xl bg-[#1e5fdc] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#174db8] focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 sm:px-4"
+            className={`min-h-11 rounded-xl px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40 sm:px-4 ${
+              enoughAnswered
+                ? "bg-[#1e5fdc] text-white hover:bg-[#174db8]"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
           >
             Submit test
           </button>

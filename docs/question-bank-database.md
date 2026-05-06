@@ -46,8 +46,11 @@ Existing validation/event tables remain separate:
 - `test_attempts`
 - `opt_in_leads`
 - `share_events`
+- `page_events`
 
 Their existing insert policies are not changed by `supabase/question_bank_schema.sql`.
+
+`page_events` is created separately by `supabase/page_events_schema.sql` for first-100-user public-test measurement. Anonymous users can insert event rows, but cannot select, update, or delete them.
 
 ## Seeding
 

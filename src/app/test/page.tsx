@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   BRAND_COMPANION,
   BRAND_ICON_PATH,
@@ -21,6 +22,10 @@ import {
 export default function TestIntroPage() {
   const router = useRouter();
 
+  useEffect(() => {
+    void trackExamEvent("test_intro_viewed", { setId: "levelTestSetA" });
+  }, []);
+
   function handleStartTest() {
     readClientUtmParams();
     window.localStorage.removeItem(USER_INFO_KEY);
@@ -28,7 +33,7 @@ export default function TestIntroPage() {
     window.localStorage.removeItem(RESULT_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_ID_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
-    trackExamEvent("test_started");
+    void trackExamEvent("test_started", { setId: "levelTestSetA" });
     router.push("/exam");
   }
 
@@ -63,6 +68,9 @@ export default function TestIntroPage() {
         <h1 className="mt-3 text-[26px] font-bold leading-tight tracking-tight">
           Start your free EPS-TOPIK level test
         </h1>
+        <p className="mt-2 text-sm font-semibold leading-6 text-[#1e5fdc]">
+          लगइन बिना तुरुन्त नतिजा
+        </p>
         <p className="mt-3 text-base leading-7 text-slate-600">
           No login or contact information is needed before the test.
         </p>
@@ -120,6 +128,9 @@ export default function TestIntroPage() {
               ),
             )}
           </div>
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            शब्दावली, व्याकरण, पढाइ, र कार्यस्थल कोरियन अभ्यास।
+          </p>
         </section>
 
         <section className="mt-4 rounded-3xl border border-slate-200 bg-white p-5">
@@ -135,10 +146,16 @@ export default function TestIntroPage() {
           >
             Start Free Level Test
           </button>
+          <p className="mt-3 text-center text-xs font-medium text-slate-500">
+            नि:शुल्क अभ्यास. नतिजा तुरुन्त देखिन्छ।
+          </p>
         </section>
 
         <footer className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-white/70 p-3">
           <p className="text-xs leading-5 text-slate-500">{DISCLAIMER}</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            स्वतन्त्र अभ्यास सेवा. HRD Korea / EPS Korea सँग सम्बन्ध छैन।
+          </p>
         </footer>
       </div>
     </main>

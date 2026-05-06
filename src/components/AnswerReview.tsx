@@ -15,10 +15,11 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
     <section id="answer-review" className="scroll-mt-20 space-y-3">
       <div>
         <h2 className="text-xl font-semibold text-slate-950">
-          Answer Review
+          Review My Answers
         </h2>
         <p className="mt-1 text-sm leading-6 text-slate-600">
-          Check each answer and read the explanation before you retake.
+          Tap a question to see your selected answer, the correct answer, and
+          explanations.
         </p>
       </div>
       {questions.map((question, index) => {
@@ -27,15 +28,20 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
         const isCorrect = getChoiceByKey(question, userAnswer) === question.answer;
 
         return (
-          <article
+          <details
             key={question.id}
-            className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
+            className="group rounded-3xl border border-slate-200 bg-white shadow-sm"
           >
-            <div className="grid gap-3 sm:flex sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Question {index + 1} - {sectionLabels[question.section]}
-                </p>
+            <summary className="grid cursor-pointer list-none gap-3 p-4 sm:flex sm:items-start sm:justify-between [&::-webkit-details-marker]:hidden">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Question {index + 1} - {sectionLabels[question.section]}
+                  </p>
+                  <span className="text-xs font-semibold text-[#1e5fdc] group-open:hidden">
+                    Tap to expand
+                  </span>
+                </div>
                 <h3 className="mt-1 font-semibold leading-7 text-slate-950">
                   {question.question}
                 </h3>
@@ -49,8 +55,8 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
               >
                 {isCorrect ? "Correct" : "Incorrect"}
               </span>
-            </div>
-            <dl className="mt-4 grid gap-3 text-sm text-slate-700">
+            </summary>
+            <dl className="grid gap-3 px-4 pb-4 text-sm text-slate-700">
               <div className="rounded-2xl bg-slate-50 p-3">
                 <dt className="font-semibold text-slate-950">Your answer</dt>
                 <dd>
@@ -79,7 +85,7 @@ export function AnswerReview({ questions, answers }: AnswerReviewProps) {
                 </dd>
               </div>
             </dl>
-          </article>
+          </details>
         );
       })}
     </section>

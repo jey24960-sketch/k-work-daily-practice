@@ -24,7 +24,7 @@ export function ResultSummary({ score, total }: ResultSummaryProps) {
       </div>
       <div className="mt-4 rounded-2xl bg-[#1e5fdc] px-3 py-2 text-white">
         <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
-          Level judgment
+          Your level
         </p>
         <p className="text-base font-semibold">{getLevel(score)}</p>
       </div>

@@ -7,6 +7,7 @@ import {
   BRAND_NAME,
   DISCLAIMER,
 } from "@/lib/brand";
+import { PageEventTracker } from "@/components/PageEventTracker";
 
 const benefits = [
   "English/Nepali explanations",
@@ -32,6 +33,7 @@ const whyUseIt = [
 export default function Home() {
   return (
     <main className="min-h-dvh bg-[#f4f6fb] px-4 py-5 text-slate-950">
+      <PageEventTracker eventName="landing_viewed" />
       <div className="mx-auto max-w-[430px]">
         <header className="sticky top-0 z-10 -mx-4 mb-5 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur">
           <div className="mx-auto flex max-w-[430px] items-center justify-between gap-3">
@@ -79,6 +81,9 @@ export default function Home() {
           <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-tight text-slate-950">
             Free EPS-TOPIK practice for Nepali learners
           </h1>
+          <p className="mt-2 text-base font-semibold leading-7 text-[#1e5fdc]">
+            नि:शुल्क EPS-TOPIK अभ्यास
+          </p>
           <p className="mt-3 text-[15px] leading-7 text-slate-600">
             Start with a 20-question level test. Then practice a little every
             day with {BRAND_NAME}.
@@ -152,17 +157,13 @@ export default function Home() {
               Start Free Level Test
               <span aria-hidden="true">{"\u2192"}</span>
             </Link>
-            <span
-              aria-disabled="true"
-              className="inline-flex min-h-12 w-full cursor-not-allowed items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-500"
-            >
-              Try Today&apos;s Daily Practice
-              <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[11px]">
-                coming soon
-              </span>
-            </span>
             <p className="text-center text-xs font-medium text-slate-400">
               No login. No payment. Instant result.
+              <br />
+              लगइन बिना तुरुन्त नतिजा.
+            </p>
+            <p className="text-center text-xs font-medium text-slate-400">
+              Daily Practice is coming soon.
             </p>
           </div>
         </section>
@@ -188,6 +189,9 @@ export default function Home() {
 
         <footer className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-white/70 p-3">
           <p className="text-xs leading-5 text-slate-500">{DISCLAIMER}</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            स्वतन्त्र अभ्यास सेवा. HRD Korea / EPS Korea सँग सम्बन्ध छैन।
+          </p>
         </footer>
       </div>
     </main>

@@ -1,4 +1,8 @@
 import { getChoiceByKey, type Question } from "@/lib/questionUtils";
+import {
+  trackExamEvent,
+  type ExamEventName,
+} from "@/lib/pageEvents";
 import type {
   ChoiceKey,
   QuestionSection,
@@ -18,7 +22,7 @@ export type TargetIndustry =
 export type OptInLead = {
   name: string;
   contact: string;
-  industry: TargetIndustry;
+  industry: TargetIndustry | "";
 };
 
 export type UtmParams = {
@@ -43,20 +47,8 @@ export const TEST_ATTEMPT_PENDING_ID_KEY =
   "k-work-daily-practice:test-attempt-pending-id";
 export const UTM_KEY = "k-work-daily-practice:utm";
 
-export type ExamEventName =
-  | "test_started"
-  | "question_answered"
-  | "test_submitted"
-  | "result_viewed"
-  | "retake_clicked";
-
-export function trackExamEvent(
-  eventName: ExamEventName,
-  metadata: Record<string, string | number | boolean> = {},
-) {
-  void eventName;
-  void metadata;
-}
+export { trackExamEvent };
+export type { ExamEventName };
 
 export type SectionScores = Record<
   SectionScoreKey,
