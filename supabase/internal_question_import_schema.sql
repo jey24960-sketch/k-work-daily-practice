@@ -1,0 +1,362 @@
+create extension if not exists "pgcrypto";
+
+create or replace function public.question_options_are_four_strings(options jsonb)
+returns boolean
+language sql
+immutable
+as $$
+  select case
+    when jsonb_typeof(options) <> 'array' then false
+    else
+      jsonb_array_length(options) = 4
+      and not exists (
+        select 1
+        from jsonb_array_elements(options) as option_value
+        where jsonb_typeof(option_value) <> 'string'
+      )
+    end;
+$$;
+
+create or replace function public.question_answer_is_option(
+  options jsonb,
+  answer text
+)
+returns boolean
+language sql
+immutable
+as $$
+  select case
+    when jsonb_typeof(options) <> 'array' then false
+    else exists (
+      select 1
+      from jsonb_array_elements_text(options) as option_value
+      where option_value = answer
+    )
+    end;
+$$;
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+create table if not exists public.questions (
+  id text primary key,
+  section text not null,
+  context text not null,
+  difficulty text not null,
+  tags text[] not null default '{}',
+  question text not null,
+  options jsonb not null,
+  answer text not null,
+  explanation_en text not null,
+  explanation_ne text not null,
+  source_type text not null default 'original',
+  reference_scope text not null,
+  official_notice text not null,
+  status text not null default 'draft',
+  is_active boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.questions
+  add column if not exists status text not null default 'draft';
+
+alter table public.questions
+  alter column is_active set default false;
+
+alter table public.questions
+  alter column tags set default '{}';
+
+do $$
+begin
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_section_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_section_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_difficulty_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_difficulty_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_source_type_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_source_type_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_options_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_options_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_answer_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_answer_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_question_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_question_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_answer_not_empty_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_answer_not_empty_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_explanation_en_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_explanation_en_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_explanation_ne_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_explanation_ne_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_official_notice_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_official_notice_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_reference_scope_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_reference_scope_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'questions_status_check'
+      and conrelid = 'public.questions'::regclass
+  ) then
+    alter table public.questions drop constraint questions_status_check;
+  end if;
+end $$;
+
+alter table public.questions
+  add constraint questions_section_check check (
+    section in ('Vocabulary', 'Grammar', 'Reading', 'Workplace Korean', 'Mixed Review')
+  ),
+  add constraint questions_difficulty_check check (
+    difficulty in ('easy', 'medium', 'hard')
+  ),
+  add constraint questions_source_type_check check (source_type = 'original'),
+  add constraint questions_status_check check (
+    status in ('draft', 'validated', 'published', 'archived')
+  ),
+  add constraint questions_options_check check (
+    public.question_options_are_four_strings(options)
+  ),
+  add constraint questions_answer_check check (
+    public.question_answer_is_option(options, answer)
+  ),
+  add constraint questions_question_check check (length(trim(question)) > 0),
+  add constraint questions_answer_not_empty_check check (length(trim(answer)) > 0),
+  add constraint questions_explanation_en_check check (length(trim(explanation_en)) > 0),
+  add constraint questions_explanation_ne_check check (length(trim(explanation_ne)) > 0),
+  add constraint questions_reference_scope_check check (length(trim(reference_scope)) > 0),
+  add constraint questions_official_notice_check check (
+    official_notice = 'This is an original practice question. It is not an official EPS-TOPIK question and is not copied from any official textbook or past exam.'
+  );
+
+create table if not exists public.question_sets (
+  id text primary key,
+  name text not null,
+  type text not null,
+  purpose text,
+  status text not null default 'draft',
+  is_active boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.question_sets
+  add column if not exists status text not null default 'draft';
+
+alter table public.question_sets
+  alter column is_active set default false;
+
+do $$
+begin
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'question_sets_type_check'
+      and conrelid = 'public.question_sets'::regclass
+  ) then
+    alter table public.question_sets drop constraint question_sets_type_check;
+  end if;
+
+  if exists (
+    select 1 from pg_constraint
+    where conname = 'question_sets_status_check'
+      and conrelid = 'public.question_sets'::regclass
+  ) then
+    alter table public.question_sets drop constraint question_sets_status_check;
+  end if;
+end $$;
+
+alter table public.question_sets
+  add constraint question_sets_type_check check (
+    type in ('level_test', 'daily_practice', 'marketing', 'replacement', 'replacement_pool')
+  ),
+  add constraint question_sets_status_check check (
+    status in ('draft', 'validated', 'published', 'archived')
+  );
+
+create table if not exists public.question_set_items (
+  set_id text not null references public.question_sets(id) on delete cascade,
+  question_id text not null references public.questions(id) on delete cascade,
+  order_index integer not null,
+  created_at timestamptz not null default now(),
+  primary key (set_id, question_id),
+  constraint question_set_items_order_index_check check (order_index >= 0),
+  constraint question_set_items_set_order_unique unique (set_id, order_index)
+);
+
+create table if not exists public.import_batches (
+  id uuid primary key default gen_random_uuid(),
+  filename text not null,
+  total_questions integer not null default 0,
+  error_count integer not null default 0,
+  warning_count integer not null default 0,
+  status text not null default 'validated',
+  set_ids text[] not null default '{}',
+  summary jsonb not null default '{}',
+  created_at timestamptz not null default now(),
+  constraint import_batches_status_check check (
+    status in ('validated', 'imported', 'failed')
+  )
+);
+
+drop trigger if exists set_questions_updated_at on public.questions;
+create trigger set_questions_updated_at
+before update on public.questions
+for each row
+execute function public.set_updated_at();
+
+drop trigger if exists set_question_sets_updated_at on public.question_sets;
+create trigger set_question_sets_updated_at
+before update on public.question_sets
+for each row
+execute function public.set_updated_at();
+
+alter table public.questions enable row level security;
+alter table public.question_sets enable row level security;
+alter table public.question_set_items enable row level security;
+alter table public.import_batches enable row level security;
+
+revoke all on public.questions from anon, authenticated;
+revoke all on public.question_sets from anon, authenticated;
+revoke all on public.question_set_items from anon, authenticated;
+revoke all on public.import_batches from anon, authenticated;
+
+grant usage on schema public to anon;
+grant select on public.questions to anon;
+grant select on public.question_sets to anon;
+grant select on public.question_set_items to anon;
+
+drop policy if exists "Allow anonymous select active questions" on public.questions;
+drop policy if exists "Allow anonymous select published active questions" on public.questions;
+create policy "Allow anonymous select published active questions"
+on public.questions
+for select
+to anon
+using (status = 'published' and is_active = true);
+
+drop policy if exists "Allow anonymous select active question sets" on public.question_sets;
+drop policy if exists "Allow anonymous select published active question sets" on public.question_sets;
+create policy "Allow anonymous select published active question sets"
+on public.question_sets
+for select
+to anon
+using (status = 'published' and is_active = true);
+
+drop policy if exists "Allow anonymous select active question set items" on public.question_set_items;
+drop policy if exists "Allow anonymous select published active question set items" on public.question_set_items;
+create policy "Allow anonymous select published active question set items"
+on public.question_set_items
+for select
+to anon
+using (
+  exists (
+    select 1
+    from public.question_sets
+    where question_sets.id = question_set_items.set_id
+      and question_sets.status = 'published'
+      and question_sets.is_active = true
+  )
+  and exists (
+    select 1
+    from public.questions
+    where questions.id = question_set_items.question_id
+      and questions.status = 'published'
+      and questions.is_active = true
+  )
+);
+
+create index if not exists idx_questions_status_active
+on public.questions (status, is_active);
+
+create index if not exists idx_questions_section
+on public.questions (section);
+
+create index if not exists idx_questions_difficulty
+on public.questions (difficulty);
+
+create index if not exists idx_questions_tags
+on public.questions using gin (tags);
+
+create index if not exists idx_question_sets_status_active
+on public.question_sets (status, is_active);
+
+create index if not exists idx_question_sets_type
+on public.question_sets (type);
+
+create index if not exists idx_question_set_items_set_order
+on public.question_set_items (set_id, order_index);
+
+create index if not exists idx_question_set_items_question_id
+on public.question_set_items (question_id);
+
+create index if not exists idx_import_batches_created_at
+on public.import_batches (created_at desc);

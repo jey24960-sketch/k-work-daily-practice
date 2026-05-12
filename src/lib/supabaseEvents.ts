@@ -34,7 +34,7 @@ export type SaveOptInLeadPayload = NullableUtmParams & {
 export type SaveShareEventPayload = NullableUtmParams & {
   attempt_id: string | null;
   total_score: number | null;
-  channel: "web_share" | "whatsapp" | "copy_link" | "facebook" | null;
+  channel: "web_share" | "whatsapp" | "copy_link" | null;
 };
 
 export async function saveTestAttempt(payload: SaveTestAttemptPayload) {

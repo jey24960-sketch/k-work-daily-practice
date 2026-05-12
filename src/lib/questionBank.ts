@@ -8,7 +8,7 @@ import {
 import { getSupabaseClient } from "@/lib/supabaseClient";
 import { trackExamEvent } from "@/lib/pageEvents";
 import {
-  validateQuestions,
+  validateQuestionIssues,
   validateQuestionSetComposition,
 } from "@/lib/questionValidation";
 import type {
@@ -33,6 +33,7 @@ type QuestionRow = {
   source_type: QuestionSourceType;
   reference_scope: string;
   official_notice: PracticeQuestion["officialNotice"];
+  status: string;
   is_active: boolean;
 };
 
@@ -85,8 +86,9 @@ export async function getActiveQuestions(): Promise<PracticeQuestion[]> {
     const { data, error } = await supabase
       .from("questions")
       .select(
-        "id, section, context, difficulty, tags, question, options, answer, explanation_en, explanation_ne, source_type, reference_scope, official_notice, is_active",
+        "id, section, context, difficulty, tags, question, options, answer, explanation_en, explanation_ne, source_type, reference_scope, official_notice, status, is_active",
       )
+      .eq("status", "published")
       .eq("is_active", true)
       .order("id");
 
@@ -99,7 +101,7 @@ export async function getActiveQuestions(): Promise<PracticeQuestion[]> {
     }
 
     const questions = data.map((row) => mapQuestionRow(row as QuestionRow));
-    const issues = validateQuestions(questions);
+    const issues = validateQuestionIssues(questions);
 
     if (issues.length) {
       return getFallbackQuestions(
@@ -126,9 +128,13 @@ async function getQuestionSet(
     const { data, error } = await supabase
       .from("question_set_items")
       .select(
-        "order_index, questions(id, section, context, difficulty, tags, question, options, answer, explanation_en, explanation_ne, source_type, reference_scope, official_notice, is_active)",
+        "order_index, question_sets!inner(id, status, is_active), questions!inner(id, section, context, difficulty, tags, question, options, answer, explanation_en, explanation_ne, source_type, reference_scope, official_notice, status, is_active)",
       )
-      .eq("set_id", setId)
+      .eq("question_sets.id", setId)
+      .eq("question_sets.status", "published")
+      .eq("question_sets.is_active", true)
+      .eq("questions.status", "published")
+      .eq("questions.is_active", true)
       .order("order_index", { ascending: true });
 
     if (error) {
@@ -145,7 +151,7 @@ async function getQuestionSet(
       .map(mapQuestionRow);
 
     const issues = [
-      ...validateQuestions(questions),
+      ...validateQuestionIssues(questions),
       ...validateQuestionSetComposition(setId, questions),
     ];
 

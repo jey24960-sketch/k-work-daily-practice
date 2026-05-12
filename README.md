@@ -43,7 +43,7 @@ Create the lightweight validation tables by pasting [supabase/schema.sql](supaba
 
 Create first-100-user page event tracking by running [supabase/page_events_schema.sql](supabase/page_events_schema.sql). This enables anonymous inserts into `public.page_events` for landing, test, result, share, opt-in, and retake events.
 
-Create the question bank by running [supabase/question_bank_schema.sql](supabase/question_bank_schema.sql), then seed with either:
+Create or upgrade the question bank by running [supabase/internal_question_import_schema.sql](supabase/internal_question_import_schema.sql). For older v0.1 databases, run it after [supabase/question_bank_schema.sql](supabase/question_bank_schema.sql) to add `status`, import batches, and published-only RLS. Then seed with either:
 
 ```bash
 npm run question-bank:seed
@@ -93,6 +93,10 @@ Version 0.1 intentionally does not include login, payments, an admin dashboard, 
 ## Question Content Data
 
 The question bank schema is documented in [docs/question-bank-database.md](docs/question-bank-database.md). The app loads `levelTestSetA` from Supabase first and falls back to the local Set A from `data/questions.ts` if the DB fetch fails or returns invalid data. Daily Practice remains unimplemented.
+
+## Internal Question Import Console
+
+v0.2-alpha includes a minimal internal import console at `/admin/questions/import` for validating generated original-question JSON, importing valid content as draft, and publishing selected sets. Setup, JSON format, SQL, token, service-role, validation, and recovery notes are documented in [docs/internal-question-import-console.md](docs/internal-question-import-console.md).
 
 ## Public-Test Analytics
 

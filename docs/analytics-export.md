@@ -4,7 +4,9 @@ K-Work Daily Practice uses lightweight Supabase event rows for public-test analy
 
 `public.page_events` stores anonymous funnel events only. It should not contain names, emails, phone numbers, WhatsApp numbers, or opt-in contact values. Actual voluntary contact stays only in `public.opt_in_leads`.
 
-`share_clicked` counts confirmed share/copy/link actions. Web Share cancellations are not counted as successful shares.
+`share_clicked` counts share intent after a WhatsApp click, native share completion, or copy action. WhatsApp tracking may represent a click into WhatsApp, not a guaranteed sent message. Web Share cancellations are not counted as successful shares.
+
+Fresh direct `/exam` visits without a local started-at value or `test_started` marker redirect to `/test`. Normal `/test` starts, in-progress refreshes, and retakes keep their own `test_started` tracking marker.
 
 ## Funnel Counts
 
@@ -146,6 +148,34 @@ from public.page_events
 where event_name = 'share_clicked'
 group by channel
 order by confirmed_share_clicks desc;
+```
+
+## Share Score Tier Breakdown
+
+```sql
+select
+  coalesce(metadata->>'scoreTier', 'unknown') as score_tier,
+  count(*) as share_clicks,
+  count(distinct session_id) as sharing_sessions
+from public.page_events
+where event_name = 'share_clicked'
+group by score_tier
+order by share_clicks desc;
+```
+
+## Share UTM Performance
+
+```sql
+select
+  coalesce(utm_medium, '(none)') as share_medium,
+  count(*) filter (where event_name = 'landing_viewed') as landing_views,
+  count(*) filter (where event_name = 'test_started') as test_starts,
+  count(*) filter (where event_name = 'result_viewed') as result_views
+from public.page_events
+where utm_source = 'share'
+  and utm_campaign = 'first_100_test'
+group by share_medium
+order by landing_views desc, test_starts desc;
 ```
 
 ## Drop-Off Step By Session

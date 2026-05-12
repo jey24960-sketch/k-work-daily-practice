@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AnswerReview } from "@/components/AnswerReview";
 import { ResultSummary } from "@/components/ResultSummary";
@@ -16,6 +17,7 @@ import {
   TEST_STARTED_TRACKED_KEY,
   USER_INFO_KEY,
   getSectionScores,
+  getScoreTier,
   getWeakAreaFeedback,
   getWeakestSections,
   readClientUtmParams,
@@ -25,6 +27,7 @@ import {
   type StoredResult,
 } from "@/lib/exam";
 import { getLevelTestSet } from "@/lib/questionBank";
+import { isSupabaseConfigured } from "@/lib/supabaseClient";
 import {
   normalizeUtmParams,
   saveOptInLead,
@@ -47,12 +50,12 @@ const industries: OptInLead["industry"][] = [
 const resultPageCopy = {
   noResultCta: "Start Free Level Test",
   actionsTitle: "Recommended next actions",
-  actionsHelper: "Share your result, get optional updates, or review answers.",
+  actionsHelper: "Review answers, retake the set, or share from the main share area.",
   reviewAnswersCta: "Review My Answers",
   retakeCta: "Retake Level Test",
   shareScoreCta: "Share My Score",
   optInJumpCta: "Get more free EPS practice sets",
-  shareTitle: "Share your score",
+  shareTitle: "Share the free level test",
   shareHelper:
     "Share a safe practice-test score message. This is only a practice result.",
   shareOpened: "Share sheet opened.",
@@ -74,12 +77,15 @@ const resultPageCopy = {
     "We could not save your request right now. Your test result and review are still available.",
   optInSuccess:
     "Thank you. We will contact you only about K-Work Daily Practice updates.",
+  optInUnavailable:
+    "Optional updates are unavailable in this environment. Your result and answer review are still available.",
 } as const;
 
 const WEAK_SECTION_RATE = 0.7;
 const SET_ID = "levelTestSetA";
 
 export default function ResultPage() {
+  const router = useRouter();
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [questionLoadError, setQuestionLoadError] = useState("");
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
@@ -96,6 +102,7 @@ export default function ResultPage() {
     contact: "",
     industry: "",
   });
+  const isOptInAvailable = isSupabaseConfigured();
 
   useEffect(() => {
     let isCurrent = true;
@@ -203,6 +210,7 @@ export default function ResultPage() {
   }, [result, sectionScores, testAttemptId, weakSections]);
 
   function handleRetake() {
+    readClientUtmParams();
     void trackExamEvent("retake_clicked", {
       attemptId: testAttemptId ?? result?.attemptId ?? null,
       previousScore: result?.score ?? null,
@@ -215,12 +223,22 @@ export default function ResultPage() {
     window.localStorage.removeItem(TEST_ATTEMPT_ID_KEY);
     window.localStorage.removeItem(TEST_ATTEMPT_PENDING_ID_KEY);
     window.localStorage.removeItem(TEST_STARTED_TRACKED_KEY);
+    window.localStorage.setItem(EXAM_STARTED_AT_KEY, Date.now().toString());
+    window.localStorage.setItem(TEST_STARTED_TRACKED_KEY, "true");
+    void trackExamEvent("test_started", {
+      retake: true,
+      setId: SET_ID,
+    });
+    router.push("/exam");
   }
 
   async function handleShare() {
     if (!result) return;
 
-    const siteUrl = shareBaseUrl || window.location.origin || window.location.href;
+    const siteUrl = getShareUrl(
+      shareBaseUrl || window.location.origin || window.location.href,
+      "native",
+    );
     const shareText = getShareText(result.score, siteUrl);
     const shareData = {
       title: "K-Work Daily Practice Free EPS-TOPIK Level Test",
@@ -231,14 +249,18 @@ export default function ResultPage() {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        void trackShareClick("web_share");
+        void trackShareClick("web_share", "native");
         setShareStatus(resultPageCopy.shareOpened);
         return;
       }
 
       if (navigator.clipboard) {
-        await navigator.clipboard.writeText(shareText);
-        void trackShareClick("copy_link");
+        const copyUrl = getShareUrl(
+          shareBaseUrl || window.location.origin || window.location.href,
+          "copy",
+        );
+        await navigator.clipboard.writeText(getShareText(result.score, copyUrl));
+        void trackShareClick("copy_link", "copy");
         setShareStatus(resultPageCopy.copySuccess);
         return;
       }
@@ -291,13 +313,19 @@ export default function ResultPage() {
     });
   }
 
-  async function trackShareClick(channel: SaveShareEventPayload["channel"]) {
+  async function trackShareClick(
+    channel: SaveShareEventPayload["channel"],
+    utmMedium: "whatsapp" | "native" | "copy",
+  ) {
+    const score = result?.score ?? null;
     void trackExamEvent("share_clicked", {
       attemptId:
         testAttemptId ??
         result?.attemptId ??
         window.localStorage.getItem(TEST_ATTEMPT_PENDING_ID_KEY),
       channel,
+      score,
+      scoreTier: score === null ? null : getScoreTier(score),
       setId: SET_ID,
       totalScore: result?.score ?? null,
     });
@@ -308,7 +336,12 @@ export default function ResultPage() {
         window.localStorage.getItem(TEST_ATTEMPT_PENDING_ID_KEY),
       total_score: result?.score ?? null,
       channel,
-      ...normalizeUtmParams(readClientUtmParams()),
+      ...normalizeUtmParams({
+        ...readClientUtmParams(),
+        utm_source: "share",
+        utm_medium: utmMedium,
+        utm_campaign: "first_100_test",
+      }),
     });
   }
 
@@ -363,7 +396,8 @@ export default function ResultPage() {
     );
   }
 
-  const shareText = getShareText(result.score, shareBaseUrl);
+  const whatsappShareUrl = getShareUrl(shareBaseUrl, "whatsapp");
+  const shareText = getShareText(result.score, whatsappShareUrl);
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const focusSections = weakSections.filter(
     ({ correct, total }) => total > 0 && correct / total < WEAK_SECTION_RATE,
@@ -454,20 +488,19 @@ export default function ResultPage() {
             >
               {resultPageCopy.reviewAnswersCta}
             </a>
-            <Link
-              href="/test"
+            <button
+              type="button"
               onClick={handleRetake}
               className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
             >
               {resultPageCopy.retakeCta}
-            </Link>
-            <button
-              type="button"
-              onClick={handleShare}
+            </button>
+            <a
+              href="#share-result"
               className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/40"
             >
               {resultPageCopy.shareScoreCta}
-            </button>
+            </a>
           </div>
           <p className="mt-3 text-xs leading-5 text-slate-500">
             Same questions for now - Set B is coming soon.
@@ -482,7 +515,14 @@ export default function ResultPage() {
           </a>
         </section>
 
-        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mt-6">
+          <AnswerReview questions={questions} answers={result.answers} />
+        </div>
+
+        <section
+          id="share-result"
+          className="mt-6 scroll-mt-20 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+        >
           <h2 className="text-lg font-semibold">{resultPageCopy.shareTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
             {resultPageCopy.shareHelper}
@@ -492,7 +532,7 @@ export default function ResultPage() {
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              onClick={() => void trackShareClick("whatsapp")}
+              onClick={() => void trackShareClick("whatsapp", "whatsapp")}
               className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-[#1e5fdc]/20 bg-[#1e5fdc]/10 px-4 py-3 text-sm font-semibold text-[#1e5fdc] transition hover:bg-[#1e5fdc]/15 focus:outline-none focus:ring-2 focus:ring-[#1e5fdc]/30"
             >
               {resultPageCopy.whatsappCta}
@@ -526,12 +566,14 @@ export default function ResultPage() {
           <p className="mt-2 text-sm font-semibold text-slate-700">
             {resultPageCopy.optInPrivacy}
           </p>
+          {isOptInAvailable ? (
           <form onSubmit={handleOptInSubmit} className="mt-4 space-y-4">
             <label className="block">
               <span className="text-sm font-semibold text-slate-700">
                 Optional name
               </span>
               <input
+                autoComplete="name"
                 value={optIn.name}
                 onChange={(event) =>
                   setOptIn((current) => ({
@@ -548,6 +590,8 @@ export default function ResultPage() {
                 Email or phone/WhatsApp contact
               </span>
               <input
+                autoComplete="email"
+                inputMode="text"
                 value={optIn.contact}
                 onChange={(event) =>
                   setOptIn((current) => ({
@@ -594,11 +638,12 @@ export default function ResultPage() {
               <p className="text-sm leading-6 text-slate-600">{optInStatus}</p>
             ) : null}
           </form>
+          ) : (
+            <p className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+              {resultPageCopy.optInUnavailable}
+            </p>
+          )}
         </section>
-
-        <div className="mt-6">
-          <AnswerReview questions={questions} answers={result.answers} />
-        </div>
 
         <div className="mt-5">
           <Link
@@ -611,6 +656,10 @@ export default function ResultPage() {
 
         <footer className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-white/70 p-3">
           <p className="text-xs leading-5 text-slate-500">{DISCLAIMER}</p>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            यो स्वतन्त्र अभ्यास सेवा हो। HRD Korea, EPS Korea, EPS Nepal वा
+            कुनै सरकारी निकायसँग सम्बन्धित छैन।
+          </p>
         </footer>
       </div>
     </main>
@@ -624,7 +673,26 @@ function getContactType(contact: string) {
 }
 
 function getShareText(score: number, url: string) {
-  return `I scored ${score}/20 on K-Work Daily Practice Free EPS-TOPIK Level Test. Try it here: ${url}`;
+  if (score < 12) {
+    return `I tried a free EPS-TOPIK level test for Nepali learners. Try it here: ${url}`;
+  }
+
+  return `I scored ${score}/20 on a free EPS-TOPIK level test for Nepali learners. Try it here: ${url}`;
+}
+
+function getShareUrl(url: string, medium: "whatsapp" | "native" | "copy") {
+  const fallbackUrl = "https://k-work-daily-practice.vercel.app";
+
+  try {
+    const shareUrl = new URL(url || fallbackUrl);
+    shareUrl.searchParams.set("utm_source", "share");
+    shareUrl.searchParams.set("utm_medium", medium);
+    shareUrl.searchParams.set("utm_campaign", "first_100_test");
+    return shareUrl.toString();
+  } catch {
+    const separator = fallbackUrl.includes("?") ? "&" : "?";
+    return `${fallbackUrl}${separator}utm_source=share&utm_medium=${medium}&utm_campaign=first_100_test`;
+  }
 }
 
 function isShareCancelError(error: unknown) {

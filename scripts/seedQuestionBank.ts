@@ -99,6 +99,7 @@ async function main() {
     source_type: question.sourceType,
     reference_scope: question.referenceScope,
     official_notice: question.officialNotice,
+    status: question.usage.isActive ? "published" : "draft",
     is_active: question.usage.isActive,
   }));
 
@@ -112,6 +113,7 @@ async function main() {
     name: set.name,
     type: set.type,
     purpose: set.purpose,
+    status: set.isActive ? "published" : "draft",
     is_active: set.isActive,
   }));
 
@@ -247,7 +249,7 @@ function addExpectedSets(sets: QuestionSets) {
     sets,
     "replacementPool",
     "Replacement Pool",
-    "replacement_pool",
+    "replacement",
     "Backup questions for future replacement and balancing workflows.",
     false,
   );

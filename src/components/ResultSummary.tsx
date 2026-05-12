@@ -28,6 +28,9 @@ export function ResultSummary({ score, total }: ResultSummaryProps) {
         </p>
         <p className="text-base font-semibold">{getLevel(score)}</p>
       </div>
+      <p className="mt-2 text-xs leading-5 text-slate-500">
+        Level on this practice test only - not an official EPS-TOPIK score.
+      </p>
     </section>
   );
 }

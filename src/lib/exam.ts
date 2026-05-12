@@ -84,10 +84,16 @@ export const difficultyLabels: Record<Question["difficulty"], string> = {
 };
 
 export function getLevel(score: number) {
-  if (score <= 7) return "Beginner";
-  if (score <= 13) return "Developing";
-  if (score <= 17) return "Near Exam Ready";
-  return "Strong";
+  if (score <= 7) return "Starting out";
+  if (score <= 13) return "Building basics";
+  if (score <= 17) return "Building fluency";
+  return "Strong on this practice set";
+}
+
+export function getScoreTier(score: number): "low" | "mid" | "high" {
+  if (score < 12) return "low";
+  if (score <= 17) return "mid";
+  return "high";
 }
 
 export function scoreAnswers(

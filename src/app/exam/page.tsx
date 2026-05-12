@@ -32,22 +32,39 @@ export default function ExamPage() {
   const [secondsLeft, setSecondsLeft] = useState(TEST_DURATION_SECONDS);
   const [showConfirm, setShowConfirm] = useState(false);
   const [autoSubmitMessage, setAutoSubmitMessage] = useState("");
+  const [hasExamAccess, setHasExamAccess] = useState(false);
   const submittedRef = useRef(false);
   const answersLoadedRef = useRef(false);
 
   useEffect(() => {
+    const hasStartedAt = Boolean(
+      window.localStorage.getItem(EXAM_STARTED_AT_KEY),
+    );
+    const hasTrackedStart = Boolean(
+      window.localStorage.getItem(TEST_STARTED_TRACKED_KEY),
+    );
+
+    if (!hasStartedAt && !hasTrackedStart) {
+      router.replace("/test");
+      return;
+    }
+
     getOrCreateExamStartedAt();
 
-    if (!window.localStorage.getItem(TEST_STARTED_TRACKED_KEY)) {
+    if (!hasTrackedStart) {
       window.localStorage.setItem(TEST_STARTED_TRACKED_KEY, "true");
       void trackExamEvent("test_started", {
-        directAccess: true,
+        recoveredStart: true,
         setId: SET_ID,
       });
     }
-  }, []);
+
+    queueMicrotask(() => setHasExamAccess(true));
+  }, [router]);
 
   useEffect(() => {
+    if (!hasExamAccess) return;
+
     let isCurrent = true;
 
     getLevelTestSet(SET_ID)
@@ -84,9 +101,11 @@ export default function ExamPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [hasExamAccess]);
 
   useEffect(() => {
+    if (!hasExamAccess) return;
+
     const storedAnswers = window.localStorage.getItem(EXAM_ANSWERS_KEY);
     queueMicrotask(() => {
       if (storedAnswers) {
@@ -94,7 +113,7 @@ export default function ExamPage() {
       }
       answersLoadedRef.current = true;
     });
-  }, []);
+  }, [hasExamAccess]);
 
   useEffect(() => {
     if (!answersLoadedRef.current) return;
@@ -144,6 +163,7 @@ export default function ExamPage() {
   }, [answers, questions, router]);
 
   useEffect(() => {
+    if (!hasExamAccess) return;
     if (!questions.length) return;
 
     const tick = () => {
@@ -162,11 +182,11 @@ export default function ExamPage() {
     const timer = window.setInterval(tick, 1000);
 
     return () => window.clearInterval(timer);
-  }, [questions.length, submitExam]);
+  }, [hasExamAccess, questions.length, submitExam]);
 
   const currentQuestion = questions[currentIndex];
 
-  if (isLoadingQuestions) {
+  if (!hasExamAccess || isLoadingQuestions) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-[#f4f6fb] px-4 text-slate-950">
         <section className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-sm">

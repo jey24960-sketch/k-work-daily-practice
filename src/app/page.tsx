@@ -85,14 +85,14 @@ export default function Home() {
             नि:शुल्क EPS-TOPIK अभ्यास
           </p>
           <p className="mt-3 text-[15px] leading-7 text-slate-600">
-            Start with a 20-question level test. Then practice a little every
-            day with {BRAND_NAME}.
+            Start with a 20-question level test and use the result to choose
+            what to practice next.
           </p>
 
           <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
             <div className="flex items-center justify-between">
-              <span className="rounded-full bg-[#1e5fdc]/10 px-2.5 py-1 text-xs font-semibold text-[#1e5fdc]">
-                Sample preview
+            <span className="rounded-full bg-[#1e5fdc]/10 px-2.5 py-1 text-xs font-semibold text-[#1e5fdc]">
+                Sample question
               </span>
               <span className="text-xs font-medium text-slate-400">~10s</span>
             </div>
@@ -103,18 +103,15 @@ export default function Home() {
               {["hospital", "factory", "school", "market"].map((choice) => (
                 <span
                   key={choice}
-                  className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${
-                    choice === "factory"
-                      ? "border-[#1e5fdc]/30 bg-[#1e5fdc]/10 text-[#1e5fdc]"
-                      : "border-slate-200 bg-slate-50 text-slate-600"
-                  }`}
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-600"
                 >
                   {choice}
                 </span>
               ))}
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">
-              After the test, you get score, weak areas, and answer review.
+              Answer: factory. After the test, you get score, weak areas, and
+              answer review.
             </p>
           </div>
 
@@ -161,9 +158,6 @@ export default function Home() {
               No login. No payment. Instant result.
               <br />
               लगइन बिना तुरुन्त नतिजा.
-            </p>
-            <p className="text-center text-xs font-medium text-slate-400">
-              Daily Practice is coming soon.
             </p>
           </div>
         </section>

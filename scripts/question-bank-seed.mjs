@@ -102,7 +102,7 @@ function addExpectedSets(sets) {
   }
 
   addSet(sets, "marketingQuestions", "Marketing Questions", "marketing", "Short practice questions for future marketing content.", false);
-  addSet(sets, "replacementPool", "Replacement Pool", "replacement_pool", "Backup questions for future replacement and balancing workflows.", false);
+  addSet(sets, "replacementPool", "Replacement Pool", "replacement", "Backup questions for future replacement and balancing workflows.", false);
 }
 
 function addSet(sets, id, name, type, purpose, isActive = false) {
@@ -128,7 +128,7 @@ function generateSeedSql(questions, sets) {
     "",
     "insert into public.questions (",
     "  id, section, context, difficulty, tags, question, options, answer,",
-    "  explanation_en, explanation_ne, source_type, reference_scope, official_notice, is_active",
+    "  explanation_en, explanation_ne, source_type, reference_scope, official_notice, status, is_active",
     ") values",
     questions.map(questionValueSql).join(",\n"),
     "on conflict (id) do update set",
@@ -144,14 +144,16 @@ function generateSeedSql(questions, sets) {
     "  source_type = excluded.source_type,",
     "  reference_scope = excluded.reference_scope,",
     "  official_notice = excluded.official_notice,",
+    "  status = excluded.status,",
     "  is_active = excluded.is_active;",
     "",
-    "insert into public.question_sets (id, name, type, purpose, is_active) values",
+    "insert into public.question_sets (id, name, type, purpose, status, is_active) values",
     [...sets.values()].map(questionSetValueSql).join(",\n"),
     "on conflict (id) do update set",
     "  name = excluded.name,",
     "  type = excluded.type,",
     "  purpose = excluded.purpose,",
+    "  status = excluded.status,",
     "  is_active = excluded.is_active;",
     "",
     `delete from public.question_set_items where set_id in (${managedSetIds
@@ -197,6 +199,7 @@ function questionValueSql(question) {
     sqlString(question.sourceType),
     sqlString(question.referenceScope),
     sqlString(question.officialNotice),
+    question.usage.isActive ? "'published'" : "'draft'",
     question.usage.isActive ? "true" : "false",
   ].join(", ")})`;
 }
@@ -207,6 +210,7 @@ function questionSetValueSql(set) {
     sqlString(set.name),
     sqlString(set.type),
     set.purpose ? sqlString(set.purpose) : "null",
+    set.isActive ? "'published'" : "'draft'",
     set.isActive ? "true" : "false",
   ].join(", ")})`;
 }
